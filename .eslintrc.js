@@ -1,0 +1,61 @@
+module.exports = {
+  root: true,
+  extends: ['@payloadcms', 'prettier'],
+  ignorePatterns: ['**/payload-types.ts'],
+  plugins: ['prettier', 'import'],
+  rules: {
+    'prettier/prettier': 'error',
+    camelcase: 'off',
+    'import/prefer-default-export': 'off',
+    'react/jsx-filename-extension': 'off',
+    'react/jsx-props-no-spreading': 'off',
+    'react/no-unused-prop-types': 'off',
+    'react/require-default-props': 'off',
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        "": "never",
+        ts: 'never',
+        tsx: 'never',
+        js: 'never',
+        jsx: 'never',
+      },
+    ],
+    quotes: 'off',
+  },
+  overrides: [
+    {
+      files: '**/*.+(ts|tsx)',
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        sourceType: 'module',
+        project: './tsconfig.json',
+      },
+      plugins: ['@typescript-eslint/eslint-plugin'],
+      extends: ['plugin:@typescript-eslint/recommended', 'prettier'],
+      rules: {
+        'perfectionist/sort-objects': 'off',
+        '@typescript-eslint/no-parameter-properties': 'off',
+        '@typescript-eslint/no-implicit-any-catch': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/explicit-module-boundary-types': 'off',
+        'no-use-before-define': [0],
+        '@typescript-eslint/no-use-before-define': [1],
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/require-await': 'off',
+        '@typescript-eslint/no-floating-promises': 'off',
+        '@typescript-eslint/restrict-template-expressions': 'off',
+        '@typescript-eslint/no-base-to-string': 'off',
+        '@typescript-eslint/quotes': [
+          2,
+          'backtick',
+          {
+            avoidEscape: true,
+          },
+        ],
+      },
+    },
+  ],
+};
