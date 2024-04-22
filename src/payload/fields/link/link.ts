@@ -141,5 +141,43 @@ export const link: LinkType = ({
     });
   }
 
+  linkResult.fields.push({
+    type: `checkbox`,
+    name: `displayIcon`,
+    label: `Display Icon`,
+    defaultValue: false,
+  });
+
+  linkResult.fields.push({
+    type: `text`,
+    name: `icon`,
+    label: `Icon`,
+    defaultValue: `BsFillLightningChargeFill`,
+    admin: {
+      description: `Check react-icons for the icon name`,
+      condition: (_, siblingData) => siblingData?.displayIcon,
+    },
+  });
+
+  linkResult.fields.push({
+    type: `select`,
+    name: `iconPosition`,
+    label: `Icon Position`,
+    defaultValue: `left`,
+    admin: {
+      condition: (_, siblingData) => siblingData?.displayIcon,
+    },
+    options: [
+      {
+        label: `Left`,
+        value: `left`,
+      },
+      {
+        label: `Right`,
+        value: `right`,
+      },
+    ],
+  });
+
   return deepMerge(linkResult, overrides);
 };

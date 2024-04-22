@@ -1,4 +1,5 @@
 import type { AfterOperationHook, TypeWithID } from 'payload/dist/collections/config/types';
+import type { CollectionConfig } from 'payload/types';
 
 import type { Settings } from '../types';
 
@@ -6,7 +7,11 @@ export type InvitedReferralResult = TypeWithID & {
   points: number;
 };
 
-export const referral: AfterOperationHook = async ({ operation, req, result }) => {
+export type Referral = {
+  hooks: CollectionConfig['hooks'];
+};
+
+export const referralCreate: AfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
     const invitationReferralCode = result.invitationReferralCode as string;
     if (!invitationReferralCode) return;
@@ -51,4 +56,11 @@ export const referral: AfterOperationHook = async ({ operation, req, result }) =
   }
 
   return result;
+};
+
+export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
+  return {
+    ...hooks,
+    afterOperation: [...(hooks?.afterOperation || []), referralCreate],
+  };
 };

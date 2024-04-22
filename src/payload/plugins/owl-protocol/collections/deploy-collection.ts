@@ -28,9 +28,7 @@ export const deployCollection = ({ collections }: DeployCollection): Config['col
         delete: admins,
       },
       fields: fields.deployCollection([], DeployCollectionContext.DeployCollection),
-      hooks: {
-        afterOperation: [hooks.deployCollection],
-      },
+      hooks: hooks.deployCollection(),
     },
   ];
 

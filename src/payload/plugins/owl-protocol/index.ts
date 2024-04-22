@@ -19,3 +19,5 @@ export const owlProtocol = () => {
       ),
   );
 };
+
+/// todo: https://docs-api.owlprotocol.xyz/docs/getting-started#typescript-api

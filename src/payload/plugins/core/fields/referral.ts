@@ -9,10 +9,12 @@ export enum ReferralContext {
   Referrals,
 }
 
-export const referral = (
-  fields: CollectionConfig['fields'],
-  context: ReferralContext,
-): CollectionConfig['fields'] => {
+export type Referral = {
+  context: ReferralContext;
+  fields: CollectionConfig['fields'];
+};
+
+export const referral = ({ fields, context }: Referral): CollectionConfig['fields'] => {
   if (context === ReferralContext.Users) {
     return [
       ...fields,
@@ -42,7 +44,7 @@ export const referral = (
             async ({ value, siblingData, req }) => {
               if (!value) {
                 value = randomstring.generate({
-                  charset: `${siblingData.id}${new Date().getTime()}`,
+                  charset: `${siblingData.email}${siblingData.id}${new Date().getTime()}`,
                 });
 
                 await req.payload.create({

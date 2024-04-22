@@ -1,4 +1,4 @@
-import type { AfterOperationHook, TypeWithID } from 'payload/dist/collections/config/types';
+import type { CollectionAfterOperationHook, CollectionConfig, TypeWithID } from 'payload/types';
 
 export type RewardsProgramResult = TypeWithID & {
   rewardProgram: {
@@ -8,7 +8,15 @@ export type RewardsProgramResult = TypeWithID & {
   };
 };
 
-export const rewardsProgram: AfterOperationHook = async ({ operation, req, result }) => {
+export type RewardsProgram = {
+  hooks: CollectionConfig['hooks'];
+};
+
+export const rewardsProgramUpdate: CollectionAfterOperationHook = async ({
+  operation,
+  req,
+  result,
+}) => {
   if (operation === `create`) {
     const categoryId = result.category as string;
 
@@ -37,4 +45,11 @@ export const rewardsProgram: AfterOperationHook = async ({ operation, req, resul
   }
 
   return result;
+};
+
+export const rewardsProgram = ({ hooks }: RewardsProgram): CollectionConfig['hooks'] => {
+  return {
+    ...hooks,
+    afterOperation: [...(hooks?.afterOperation || []), rewardsProgramUpdate],
+  };
 };

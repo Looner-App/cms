@@ -9,10 +9,12 @@ export enum RewardsProgramContext {
   Items,
 }
 
-export const rewardsProgram = (
-  fields: CollectionConfig['fields'],
-  context: RewardsProgramContext,
-): CollectionConfig['fields'] => {
+export type RewardsProgram = {
+  context: RewardsProgramContext;
+  fields: CollectionConfig['fields'];
+};
+
+export const rewardsProgram = ({ fields, context }: RewardsProgram): CollectionConfig['fields'] => {
   if (context === RewardsProgramContext.Categories) {
     return [
       ...fields,

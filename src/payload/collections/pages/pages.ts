@@ -11,11 +11,6 @@ export const Pages: CollectionConfig = {
   admin: {
     useAsTitle: `title`,
     defaultColumns: [`title`, `slug`, `_status`, `createdAt`, `updatedAt`, `publishedDate`],
-    // preview: doc => {
-    //   return `${process.env.PAYLOAD_PUBLIC_FRONTEND_URL}/api/preview?url=${encodeURIComponent(
-    //     `${process.env.PAYLOAD_PUBLIC_FRONTEND_URL}/${doc.slug !== `home` ? doc.slug : ``}`,
-    //   )}&secret=${process.env.PAYLOAD_PUBLIC_DRAFT_SECRET}`;
-    // },
   },
   hooks: {
     beforeChange: [populatePublishedDate],

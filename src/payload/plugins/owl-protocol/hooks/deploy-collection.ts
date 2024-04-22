@@ -1,4 +1,4 @@
-import type { AfterOperationHook, TypeWithID } from 'payload/dist/collections/config/types';
+import type { CollectionAfterOperationHook, CollectionConfig, TypeWithID } from 'payload/types';
 
 import { webhook } from '../webhook';
 
@@ -9,7 +9,11 @@ export type DeployResult = TypeWithID & {
   };
 };
 
-export const deployCollection: AfterOperationHook = async ({ result, operation, req }) => {
+export const deployCollectionHook: CollectionAfterOperationHook = async ({
+  result,
+  operation,
+  req,
+}) => {
   const { details } = result as DeployResult;
 
   if (operation === `create`) {
@@ -40,4 +44,10 @@ export const deployCollection: AfterOperationHook = async ({ result, operation, 
   }
 
   return result;
+};
+
+export const deployCollection = (): CollectionConfig['hooks'] => {
+  return {
+    afterOperation: [deployCollectionHook],
+  };
 };

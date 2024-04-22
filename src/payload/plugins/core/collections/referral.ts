@@ -6,7 +6,6 @@ import { anyone } from '../../../access';
 import { fields } from '../fields';
 import { ReferralContext } from '../fields/referral';
 import { hooks } from '../hooks';
-// import { hooks } from '../hooks';
 
 export type Referral = {
   collections: Config['collections'];
@@ -30,18 +29,24 @@ export const referral = ({ collections }: Referral): Config['collections'] => {
         create: () => false,
         delete: () => false,
       },
-      fields: fields.referral([], ReferralContext.Referrals),
+      fields: fields.referral({
+        fields: [],
+        context: ReferralContext.Referrals,
+      }),
     },
   ];
 
+  /// extending payload default collections
   return map(collectionsWithReferral, collection => {
     if (collection.slug === `users`) {
-      collection.fields = fields.referral(collection.fields, ReferralContext.Users);
+      collection.fields = fields.referral({
+        fields: collection.fields,
+        context: ReferralContext.Users,
+      });
 
-      collection.hooks = {
-        ...collection.hooks,
-        afterOperation: [...(collection.hooks?.afterOperation || []), hooks.referral],
-      };
+      collection.hooks = hooks.referral({
+        hooks: collection.hooks,
+      });
     }
 
     return collection;

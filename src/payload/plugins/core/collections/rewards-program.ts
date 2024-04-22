@@ -29,24 +29,31 @@ export const rewardsProgram = ({ collections }: RewardsProgram): Config['collect
         create: admins,
         delete: admins,
       },
-      fields: fields.rewardsProgram([], RewardsProgramContext.RewardsProgram),
+      fields: fields.rewardsProgram({
+        fields: [],
+        context: RewardsProgramContext.RewardsProgram,
+      }),
     },
   ];
 
+  /// extending payload default collections
   return map(collectionsWithRewardsPrograms, collection => {
     if (collection.slug === `categories`) {
-      collection.fields = fields.rewardsProgram(
-        collection.fields,
-        RewardsProgramContext.Categories,
-      );
+      collection.fields = fields.rewardsProgram({
+        fields: collection.fields,
+        context: RewardsProgramContext.Categories,
+      });
     }
 
     if (collection.slug === `items`) {
-      collection.fields = fields.rewardsProgram(collection.fields, RewardsProgramContext.Items);
+      collection.fields = fields.rewardsProgram({
+        fields: collection.fields,
+        context: RewardsProgramContext.Items,
+      });
 
-      collection.hooks = {
-        afterOperation: [...(collection.hooks?.afterOperation || []), hooks.rewardsProgram],
-      };
+      collection.hooks = hooks.rewardsProgram({
+        hooks: collection.hooks,
+      });
     }
 
     return collection;

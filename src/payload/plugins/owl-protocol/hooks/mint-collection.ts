@@ -1,4 +1,4 @@
-import type { AfterOperationHook } from 'payload/dist/collections/config/types';
+import type { CollectionAfterOperationHook, CollectionConfig } from 'payload/types';
 
 import { webhook } from '../webhook';
 
@@ -14,7 +14,15 @@ export type ClaimedByResult = {
   address: string;
 };
 
-export const mintCollection: AfterOperationHook = async ({ result, operation, req }) => {
+export type MintCollection = {
+  hooks: CollectionConfig['hooks'];
+};
+
+export const mintCollectionHook: CollectionAfterOperationHook = async ({
+  result,
+  operation,
+  req,
+}) => {
   if (operation === `update`) {
     try {
       const { docs } = result;
@@ -67,4 +75,11 @@ export const mintCollection: AfterOperationHook = async ({ result, operation, re
   }
 
   return result;
+};
+
+export const mintCollection = ({ hooks }: MintCollection): CollectionConfig['hooks'] => {
+  return {
+    ...hooks,
+    afterOperation: [...(hooks?.afterOperation || []), mintCollectionHook],
+  };
 };

@@ -14,10 +14,9 @@ export const mintCollection = ({ collections }: MintCollection): Config['collect
     if (collection.slug === `items`) {
       collection.fields = fields.mintCollection(collection.fields);
 
-      collection.hooks = {
-        ...collection.hooks,
-        afterOperation: [...(collection.hooks?.afterOperation || []), hooks.mintCollection],
-      };
+      collection.hooks = hooks.mintCollection({
+        hooks: collection.hooks,
+      });
     }
 
     return collection;
