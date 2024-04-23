@@ -2,6 +2,8 @@ import type { CollectionConfig } from 'payload/types';
 
 import { admins, adminsOrPublished } from '../../access';
 import { introContent, mapItems } from '../../blocks';
+import { cards } from '../../blocks/cards';
+import { roadmap } from '../../blocks/roadmap';
 import { slug } from '../../fields';
 import { populatePublishedDate } from '../../hooks/populate-published-date';
 import { homepageResolver, revalidatePage } from './hooks';
@@ -50,11 +52,7 @@ export const Pages: CollectionConfig = {
             {
               name: `layout`,
               type: `blocks`,
-              blocks: [
-                // textContent, // TODO: orine hide @henrytrianta
-                introContent,
-                mapItems,
-              ],
+              blocks: [introContent, mapItems, cards, roadmap],
             },
           ],
         },

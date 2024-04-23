@@ -15,8 +15,9 @@ export const owlProtocol = () => {
           ...acc,
           collections: collections[method]({ collections: acc.collections }),
         }),
-        { ...config, globals: globals.settings({ globals: config.globals }) },
+        config,
       ),
+    (config: Config) => ({ ...config, globals: globals.settings({ globals: config.globals }) }),
   );
 };
 
