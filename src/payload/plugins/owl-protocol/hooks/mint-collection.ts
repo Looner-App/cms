@@ -52,17 +52,15 @@ export const mintCollectionHook: CollectionAfterOperationHook = async ({
             to: claimedBy.address,
           });
 
-          await req.payload.update({
+          const updatedMint = await req.payload.update({
             collection: `items`,
-            where: {
-              id: { equals: doc.id },
-            },
+            id: doc.id,
             data: {
               tokenId: data.mints[0].tokenId,
             },
           });
 
-          req.payload.logger.info(`Collection mint successfully:` + JSON.stringify(data));
+          req.payload.logger.info(`Collection mint successfully:` + JSON.stringify(updatedMint));
         }
       });
 

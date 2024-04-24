@@ -17,7 +17,15 @@ export const owlProtocol = () => {
         }),
         config,
       ),
-    (config: Config) => ({ ...config, globals: globals.settings({ globals: config.globals }) }),
+    (config: Config) =>
+      reduce(
+        [`settings`],
+        (acc, method) => ({
+          ...acc,
+          globals: globals[method]({ globals: config.globals }),
+        }),
+        config,
+      ),
   );
 };
 

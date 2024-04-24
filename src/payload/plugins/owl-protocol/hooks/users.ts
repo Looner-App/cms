@@ -3,6 +3,7 @@ import type { CollectionAfterOperationHook, CollectionConfig, TypeWithID } from 
 import { webhook } from '../webhook';
 
 export type CreateResult = TypeWithID & {
+  address?: string;
   email: string;
   name: string;
 };
@@ -13,7 +14,10 @@ export type Users = {
 
 export const createUser: CollectionAfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
-    const { email, name, id } = result as CreateResult;
+    const { email, name, id, address } = result as CreateResult;
+
+    if (address) return result;
+
     try {
       const { userId } = await webhook.createUser({
         payload: req.payload,
@@ -29,22 +33,15 @@ export const createUser: CollectionAfterOperationHook = async ({ operation, req,
         userId,
       });
 
-      await req.payload.update({
+      const updatedUser = await req.payload.update({
         collection: `users`,
-        where: {
-          id: { equals: id },
-        },
+        id,
         data: {
           address: safeAddress,
         },
       });
 
-      req.payload.logger.info(
-        `Account creationg successfully: ${JSON.stringify({
-          ...result,
-          address: safeAddress,
-        })}`,
-      );
+      req.payload.logger.info(`Account creationg successfully: ${JSON.stringify(updatedUser)}`);
     } catch (error) {
       const msg = error instanceof Error ? error.message : error;
       req.payload.logger.error(`Error creating account: ${msg}`);

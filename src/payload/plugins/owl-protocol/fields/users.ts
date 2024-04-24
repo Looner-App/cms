@@ -11,6 +11,7 @@ export const users = (fields: CollectionConfig['fields']): CollectionConfig['fie
       label: `Address`,
       type: `text`,
       access: {
+        read: () => true,
         update: () => false,
         create: admins,
       },

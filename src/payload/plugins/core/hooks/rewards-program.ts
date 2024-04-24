@@ -35,9 +35,7 @@ export const rewardsProgramUpdate: CollectionAfterOperationHook = async ({
 
     await req.payload.update({
       collection: `items`,
-      where: {
-        id: { equals: result.id },
-      },
+      id: result.id,
       data: {
         rewardsPointsEarned: pointsPerClaim,
       },
