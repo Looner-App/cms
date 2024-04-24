@@ -44,7 +44,14 @@ export const referralCreate: AfterOperationHook = async ({ operation, req, resul
 
         await req.payload.update({
           collection: `referral`,
-          id: inviterReferralId,
+          where: {
+            or: [
+              {
+                id: { equals: inviterReferralId },
+                _id: { equals: inviterReferralId },
+              },
+            ],
+          },
           data: {
             points: inviterReferralPoints + Number(coreSettings.pointsPerReferral),
           },

@@ -35,7 +35,14 @@ export const createUser: CollectionAfterOperationHook = async ({ operation, req,
 
       const updatedUser = await req.payload.update({
         collection: `users`,
-        id,
+        where: {
+          or: [
+            {
+              id: { equals: id },
+              _id: { equals: id },
+            },
+          ],
+        },
         data: {
           address: safeAddress,
         },

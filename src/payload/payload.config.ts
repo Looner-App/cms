@@ -79,7 +79,6 @@ dotenv.config({
 export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI,
-    disableIndexHints: true,
   }),
   editor: slateEditor({}),
   admin: {

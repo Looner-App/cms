@@ -30,7 +30,14 @@ export const deployCollectionHook: CollectionAfterOperationHook = async ({
 
       const deployedCollection = await req.payload.update({
         collection: `deploy-collection`,
-        id: result.id,
+        where: {
+          or: [
+            {
+              id: { equals: result.id },
+              _id: { equals: result.id },
+            },
+          ],
+        },
         data: {
           details: {
             collectionAddress: data.contractAddress,

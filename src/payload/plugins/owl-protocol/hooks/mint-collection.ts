@@ -54,7 +54,14 @@ export const mintCollectionHook: CollectionAfterOperationHook = async ({
 
           const updatedMint = await req.payload.update({
             collection: `items`,
-            id: doc.id,
+            where: {
+              or: [
+                {
+                  id: { equals: doc.id },
+                  _id: { equals: doc.id },
+                },
+              ],
+            },
             data: {
               tokenId: data.mints[0].tokenId,
             },
