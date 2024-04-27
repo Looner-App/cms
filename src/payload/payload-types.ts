@@ -14,12 +14,17 @@ export interface Config {
     media: Media;
     users: User;
     redirects: Redirect;
+    'deploy-collection': DeployCollection;
+    'rewards-program': RewardsProgram;
+    referral: Referral;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   globals: {
     settings: Settings;
     header: Header;
+    owlProtocol: OwlProtocol;
+    core: Core;
   };
 }
 /**
@@ -48,6 +53,8 @@ export interface Item {
   };
   claimedBy?: (string | null) | User;
   claimedAt?: string | null;
+  tokenId?: string | null;
+  rewardsPointsEarned?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -60,6 +67,41 @@ export interface Category {
   slug?: string | null;
   title: string;
   shortTitle?: string | null;
+  deployedCollection?: (string | null) | DeployCollection;
+  rewardProgram?: (string | null) | RewardsProgram;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "deploy-collection".
+ */
+export interface DeployCollection {
+  id: string;
+  title: string;
+  details: {
+    name: string;
+    symbol: string;
+    collectionAddress?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rewards-program".
+ */
+export interface RewardsProgram {
+  id: string;
+  title: string;
+  leaderboard: {
+    epochName: string;
+    description: string;
+    image?: string | Media | null;
+  };
+  details: {
+    pointsPerClaim: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -126,6 +168,9 @@ export interface User {
   roles?: ('admin' | 'user')[] | null;
   createdAt: string;
   updatedAt: string;
+  address?: string | null;
+  referralCode?: string | null;
+  invitationReferralCode?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -148,20 +193,6 @@ export interface Page {
     | (
         | {
             sectionID?: string | null;
-            content?: {
-              slate?:
-                | {
-                    [k: string]: unknown;
-                  }[]
-                | null;
-              html?: string | null;
-            };
-            id?: string | null;
-            blockName?: string | null;
-            blockType: 'text-content';
-          }
-        | {
-            sectionID?: string | null;
             title?: {
               slate?:
                 | {
@@ -171,6 +202,7 @@ export interface Page {
               html?: string | null;
             };
             image?: string | Media | null;
+            imagePosition?: ('left' | 'right') | null;
             desc?: {
               slate?:
                 | {
@@ -191,10 +223,14 @@ export interface Page {
                     archive?: string | null;
                     url?: string | null;
                     label: string;
+                    displayIcon?: boolean | null;
+                    icon?: string | null;
+                    iconPosition?: ('left' | 'right') | null;
                   };
                   id?: string | null;
                 }[]
               | null;
+            cardVariant?: ('default' | 'primary' | 'secondary') | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'intro-content';
@@ -212,6 +248,44 @@ export interface Page {
             id?: string | null;
             blockName?: string | null;
             blockType: 'map-items';
+          }
+        | {
+            sectionID?: string | null;
+            title?: {
+              slate?:
+                | {
+                    [k: string]: unknown;
+                  }[]
+                | null;
+              html?: string | null;
+            };
+            description?: {
+              slate?:
+                | {
+                    [k: string]: unknown;
+                  }[]
+                | null;
+              html?: string | null;
+            };
+            cardsList?:
+              | {
+                  title: string;
+                  description: string;
+                  cardVariant?: ('default' | 'primary' | 'secondary') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cards';
+          }
+        | {
+            sectionID?: string | null;
+            image?: string | Media | null;
+            imageMobile?: string | Media | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'roadmap';
           }
       )[]
     | null;
@@ -239,6 +313,18 @@ export interface Redirect {
     } | null;
     url?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referral".
+ */
+export interface Referral {
+  id: string;
+  title?: string | null;
+  referralCode?: string | null;
+  points?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -315,11 +401,37 @@ export interface Header {
             archive?: string | null;
             url?: string | null;
             label: string;
+            displayIcon?: boolean | null;
+            icon?: string | null;
+            iconPosition?: ('left' | 'right') | null;
           };
           id?: string | null;
         }[]
       | null;
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "owlProtocol".
+ */
+export interface OwlProtocol {
+  id: string;
+  API: string;
+  xApiKey: string;
+  projectId: string;
+  chainId: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "core".
+ */
+export interface Core {
+  id: string;
+  pointsPerReferral: number;
   updatedAt?: string | null;
   createdAt?: string | null;
 }

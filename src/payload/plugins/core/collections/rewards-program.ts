@@ -22,6 +22,10 @@ export const rewardsProgram = ({ collections }: RewardsProgram): Config['collect
       },
       admin: {
         useAsTitle: `title`,
+        group: `Core`,
+      },
+      typescript: {
+        interface: `RewardsProgram`,
       },
       access: {
         read: anyone,
@@ -46,11 +50,6 @@ export const rewardsProgram = ({ collections }: RewardsProgram): Config['collect
     }
 
     if (collection.slug === `items`) {
-      collection.fields = fields.rewardsProgram({
-        fields: collection.fields,
-        context: RewardsProgramContext.Items,
-      });
-
       collection.hooks = hooks.rewardsProgram({
         hooks: collection.hooks,
       });

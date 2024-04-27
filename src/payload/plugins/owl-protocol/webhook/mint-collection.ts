@@ -9,6 +9,8 @@ export type MintCollectionResponse = {
   chainId: number;
   mints: {
     to: string;
+  }[];
+  tokens: {
     tokenId: number | string;
   }[];
 };

@@ -20,8 +20,12 @@ export const referral = ({ collections }: Referral): Config['collections'] => {
         singular: `Referral`,
         plural: `Referrals`,
       },
+      typescript: {
+        interface: `Referral`,
+      },
       admin: {
         useAsTitle: `title`,
+        group: `Core`,
       },
       access: {
         read: anyone,

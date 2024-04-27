@@ -20,6 +20,7 @@ export const deployCollection = ({ collections }: DeployCollection): Config['col
       admin: {
         useAsTitle: `title`,
         defaultColumns: [`title`, `createdAt`, `updatedAt`],
+        group: `Owl protocol`,
       },
       access: {
         read: anyone,

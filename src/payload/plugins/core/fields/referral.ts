@@ -90,6 +90,9 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
       type: `text`,
       name: `referralCode`,
       label: `Referral Code`,
+      admin: {
+        readOnly: true,
+      },
     },
     {
       type: `number`,

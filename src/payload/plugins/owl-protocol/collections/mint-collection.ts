@@ -2,7 +2,9 @@ import type { Config } from 'payload/config';
 
 import map from 'lodash/map';
 
+import { anyone } from '../../../access';
 import { fields } from '../fields';
+import { MintsContext } from '../fields/mint-collection';
 import { hooks } from '../hooks';
 
 export type MintCollection = {
@@ -10,9 +12,35 @@ export type MintCollection = {
 };
 
 export const mintCollection = ({ collections }: MintCollection): Config['collections'] => {
-  return map(collections, collection => {
+  const collectionsWithMints = [
+    ...collections,
+    {
+      slug: `mints`,
+      labels: {
+        singular: `Mint`,
+        plural: `Mints`,
+      },
+      typescript: {
+        interface: `Mint`,
+      },
+      admin: {
+        useAsTitle: `title`,
+        group: `Owl protocol`,
+        defaultColumns: [`title`, `tokenId`, `user.name`, `category.name`],
+      },
+      access: {
+        read: anyone,
+        update: () => false,
+        create: () => false,
+        delete: () => false,
+      },
+      fields: fields.mintCollection([], MintsContext.Mints),
+    },
+  ];
+
+  return map(collectionsWithMints, collection => {
     if (collection.slug === `items`) {
-      collection.fields = fields.mintCollection(collection.fields);
+      collection.fields = fields.mintCollection(collection.fields, MintsContext.Items);
 
       collection.hooks = hooks.mintCollection({
         hooks: collection.hooks,

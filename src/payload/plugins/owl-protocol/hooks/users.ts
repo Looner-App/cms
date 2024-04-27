@@ -1,12 +1,6 @@
-import type { CollectionAfterOperationHook, CollectionConfig, TypeWithID } from 'payload/types';
+import type { CollectionAfterOperationHook, CollectionConfig } from 'payload/types';
 
 import { webhook } from '../webhook';
-
-export type CreateResult = TypeWithID & {
-  address?: string;
-  email: string;
-  name: string;
-};
 
 export type Users = {
   hooks: CollectionConfig['hooks'];
@@ -14,7 +8,7 @@ export type Users = {
 
 export const createUser: CollectionAfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
-    const { email, name, id, address } = result as CreateResult;
+    const { email, name, id, address } = result as any;
 
     if (address) return result;
 
@@ -35,14 +29,7 @@ export const createUser: CollectionAfterOperationHook = async ({ operation, req,
 
       const updatedUser = await req.payload.update({
         collection: `users`,
-        where: {
-          or: [
-            {
-              id: { equals: id },
-              _id: { equals: id },
-            },
-          ],
-        },
+        id,
         data: {
           address: safeAddress,
         },

@@ -2,18 +2,6 @@ import type { CollectionAfterOperationHook, CollectionConfig } from 'payload/typ
 
 import { webhook } from '../webhook';
 
-export type RelationshipResult = {
-  deployedCollection: {
-    details: {
-      collectionAddress: string;
-    };
-  };
-};
-
-export type ClaimedByResult = {
-  address: string;
-};
-
 export type MintCollection = {
   hooks: CollectionConfig['hooks'];
 };
@@ -27,48 +15,49 @@ export const mintCollectionHook: CollectionAfterOperationHook = async ({
     try {
       const { docs } = result;
 
-      docs.forEach(async doc => {
-        const claimedBy = doc[`claimedBy`] as ClaimedByResult | undefined;
-        if (!claimedBy?.address) return;
-
-        const currentDoc = await req.payload.findByID({
-          collection: `items`,
-          id: doc.id,
+      docs.forEach(async (doc: any) => {
+        const mint = await req.payload.find({
+          collection: `mints`,
+          where: {
+            claimable: doc.id,
+          },
         });
 
-        if (currentDoc.tokenId) return;
+        /// skip if already claimed
+        if (mint.docs.length > 1) return;
 
-        const { deployedCollection } = doc[`category`] as RelationshipResult;
+        /// skip if use dont have address
+        if (!doc.claimedBy?.address) return;
+
+        const { deployedCollection } = doc.category;
+
+        /// skip if collection is not deployed
         if (!deployedCollection) return;
 
         const {
           details: { collectionAddress },
         } = deployedCollection;
 
-        if (collectionAddress) {
-          const data = await webhook.mintCollection({
-            payload: req.payload,
-            collectionAddress,
-            to: claimedBy.address,
-          });
+        /// if skip if collection address is not available
+        if (!collectionAddress) return;
 
-          const updatedMint = await req.payload.update({
-            collection: `items`,
-            where: {
-              or: [
-                {
-                  id: { equals: doc.id },
-                  _id: { equals: doc.id },
-                },
-              ],
-            },
-            data: {
-              tokenId: data.mints[0].tokenId,
-            },
-          });
+        const data = await webhook.mintCollection({
+          payload: req.payload,
+          collectionAddress,
+          to: doc.claimedBy.address,
+        });
 
-          req.payload.logger.info(`Collection mint successfully:` + JSON.stringify(updatedMint));
-        }
+        const updatedMint = await req.payload.create({
+          collection: `mints`,
+          data: {
+            tokenId: data.tokens[0].tokenId,
+            user: doc.claimedBy.id,
+            category: doc.category.id,
+            claimable: doc.id,
+          },
+        });
+
+        req.payload.logger.info(`Collection mint successfully:` + JSON.stringify(updatedMint));
       });
 
       return result;

@@ -6,7 +6,6 @@ import { admins } from '../../../access';
 export enum RewardsProgramContext {
   Categories,
   RewardsProgram,
-  Items,
 }
 
 export type RewardsProgram = {
@@ -27,30 +26,6 @@ export const rewardsProgram = ({ fields, context }: RewardsProgram): CollectionC
           create: admins,
         },
         relationTo: `rewards-program`,
-      },
-    ];
-  }
-
-  if (context === RewardsProgramContext.Items) {
-    return [
-      ...fields,
-      {
-        name: `rewardsPointsEarned`,
-        label: `Rewards points earned`,
-        type: `number`,
-        access: {
-          update: () => false,
-          create: () => false,
-          read: () => true,
-        },
-
-        admin: {
-          readOnly: true,
-          condition: (data, siblingData) => {
-            const rewardProgram = siblingData.rewardsPointsEarned && siblingData.claimedBy;
-            return !!rewardProgram && data.id;
-          },
-        },
       },
     ];
   }

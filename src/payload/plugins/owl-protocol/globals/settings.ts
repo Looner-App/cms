@@ -22,7 +22,7 @@ export const settings = ({ globals }: Settings): Config['globals'] => [
       update: admins,
     },
     admin: {
-      group: `Settings`,
+      group: `Owl protocol`,
     },
     fields: [
       {

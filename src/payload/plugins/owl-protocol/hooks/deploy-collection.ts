@@ -1,21 +1,13 @@
-import type { CollectionAfterOperationHook, CollectionConfig, TypeWithID } from 'payload/types';
+import type { CollectionAfterOperationHook, CollectionConfig } from 'payload/types';
 
 import { webhook } from '../webhook';
-
-export type DeployResult = TypeWithID & {
-  details: {
-    collectionAddress?: string;
-    name: string;
-    symbol: string;
-  };
-};
 
 export const deployCollectionHook: CollectionAfterOperationHook = async ({
   result,
   operation,
   req,
 }) => {
-  const { details } = result as DeployResult;
+  const { details } = result;
 
   if (operation === `create`) {
     const { name, symbol, collectionAddress } = details;
@@ -30,14 +22,7 @@ export const deployCollectionHook: CollectionAfterOperationHook = async ({
 
       const deployedCollection = await req.payload.update({
         collection: `deploy-collection`,
-        where: {
-          or: [
-            {
-              id: { equals: result.id },
-              _id: { equals: result.id },
-            },
-          ],
-        },
+        id: result.id,
         data: {
           details: {
             collectionAddress: data.contractAddress,

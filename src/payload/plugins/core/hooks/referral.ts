@@ -1,11 +1,7 @@
-import type { AfterOperationHook, TypeWithID } from 'payload/dist/collections/config/types';
+import type { AfterOperationHook } from 'payload/dist/collections/config/types';
 import type { CollectionConfig } from 'payload/types';
 
 import type { Settings } from '../types';
-
-export type InvitedReferralResult = TypeWithID & {
-  points: number;
-};
 
 export type Referral = {
   hooks: CollectionConfig['hooks'];
@@ -13,51 +9,47 @@ export type Referral = {
 
 export const referralCreate: AfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
-    const invitationReferralCode = result.invitationReferralCode as string;
-    if (!invitationReferralCode) return;
+    try {
+      const invitationReferralCode = result.invitationReferralCode;
+      if (!invitationReferralCode) return;
 
-    const inviter = await req.payload.find({
-      collection: `users`,
-      where: {
-        referralCode: { equals: invitationReferralCode },
-      },
-    });
-
-    inviter.docs.map(async inviter => {
-      const inviterReferralCode = inviter.referralCode as string;
-      if (!inviterReferralCode) return;
-
-      const inviterReferral = await req.payload.find({
-        collection: `referral`,
+      const inviter = await req.payload.find({
+        collection: `users`,
         where: {
-          referralCode: { equals: inviterReferralCode },
+          referralCode: { equals: invitationReferralCode },
         },
       });
 
-      const coreSettings = (await req.payload.findGlobal({
-        slug: `core`,
-      })) as Settings;
+      inviter.docs.map(async inviter => {
+        const inviterReferralCode = inviter.referralCode;
+        if (!inviterReferralCode) return;
 
-      inviterReferral.docs.map(async (inviterReferralData: InvitedReferralResult) => {
-        const inviterReferralId = inviterReferralData.id as string;
-        const inviterReferralPoints = inviterReferralData.points;
-
-        await req.payload.update({
+        const inviterReferral = await req.payload.find({
           collection: `referral`,
           where: {
-            or: [
-              {
-                id: { equals: inviterReferralId },
-                _id: { equals: inviterReferralId },
-              },
-            ],
-          },
-          data: {
-            points: inviterReferralPoints + Number(coreSettings.pointsPerReferral),
+            referralCode: { equals: inviterReferralCode },
           },
         });
+
+        const coreSettings = (await req.payload.findGlobal({
+          slug: `core`,
+        })) as Settings;
+
+        inviterReferral.docs.map(async inviterReferralData => {
+          await req.payload.update({
+            collection: `referral`,
+            id: inviterReferralData.id,
+            data: {
+              points: Number(inviterReferralData.points) + Number(coreSettings.pointsPerReferral),
+            },
+          });
+        });
       });
-    });
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : error;
+      req.payload.logger.error(`Error setting referral: ${msg}`);
+      return result;
+    }
   }
 
   return result;

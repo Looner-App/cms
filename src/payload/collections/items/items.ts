@@ -50,6 +50,7 @@ export const Items: CollectionConfig = {
         read: admins,
       },
       admin: {
+        readOnly: true,
         position: `sidebar`,
         description: `The code will autogenerate`,
       },
@@ -168,6 +169,7 @@ export const Items: CollectionConfig = {
       type: `relationship`,
       relationTo: `users`,
       admin: {
+        readOnly: true,
         position: `sidebar`,
       },
     },
@@ -175,6 +177,7 @@ export const Items: CollectionConfig = {
       name: `claimedAt`,
       type: `date`,
       admin: {
+        readOnly: true,
         position: `sidebar`,
         date: {
           pickerAppearance: `dayAndTime`,

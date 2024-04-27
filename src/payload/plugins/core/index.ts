@@ -10,7 +10,7 @@ export const core = () => {
     (incomingConfig: Config) => merge({}, incomingConfig), // Make a shallow copy of incomingConfig
     (config: Config) => {
       return reduce(
-        [`rewardsProgram`, `referral`],
+        [`rewardsProgram`, `referral`, `points`],
         (acc, method) => ({
           ...acc,
           collections: collections[method]({ collections: acc.collections }),
