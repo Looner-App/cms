@@ -19,7 +19,9 @@ export const mintCollectionHook: CollectionAfterOperationHook = async ({
         const mint = await req.payload.find({
           collection: `mints`,
           where: {
-            claimable: doc.id,
+            claimable: {
+              equals: doc.id,
+            },
           },
         });
 

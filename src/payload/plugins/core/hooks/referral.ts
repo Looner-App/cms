@@ -10,7 +10,7 @@ export type Referral = {
 export const referralCreate: AfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
     try {
-      const invitationReferralCode = result.invitationReferralCode;
+      const { invitationReferralCode } = result;
       if (!invitationReferralCode) return;
 
       const inviter = await req.payload.find({

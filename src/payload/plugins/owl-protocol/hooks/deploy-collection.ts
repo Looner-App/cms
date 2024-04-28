@@ -7,13 +7,13 @@ export const deployCollectionHook: CollectionAfterOperationHook = async ({
   operation,
   req,
 }) => {
-  const { details } = result;
-
   if (operation === `create`) {
-    const { name, symbol, collectionAddress } = details;
-    if (collectionAddress) return result;
-
     try {
+      const { details } = result as any;
+
+      const { name, symbol, collectionAddress } = details;
+      if (collectionAddress) return result;
+
       const data = await webhook.deployCollection({
         payload: req.payload,
         name,

@@ -23,8 +23,9 @@ export const points = ({ collections }: Pages): Config['collections'] => {
         interface: `Points`,
       },
       admin: {
-        useAsTitle: `title`,
+        useAsTitle: `user.name`,
         group: `Core`,
+        defaultColumns: [`user.name`, `rewardsPointsEarned`, `rewardProgram.title`],
       },
       access: {
         read: anyone,

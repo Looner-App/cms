@@ -8,11 +8,10 @@ export type Users = {
 
 export const createUser: CollectionAfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
-    const { email, name, id, address } = result as any;
-
-    if (address) return result;
-
     try {
+      const { email, name, id, address } = result as any;
+
+      if (address) return result;
       const { userId } = await webhook.createUser({
         payload: req.payload,
         externalId: `${id}`,

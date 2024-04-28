@@ -12,21 +12,14 @@ export const rewardsProgramUpdate: CollectionAfterOperationHook = async ({
   if (operation === `update`) {
     try {
       result.docs.forEach(async (doc: any) => {
-        console.log(JSON.stringify(doc));
-        /// skip if no category
-        if (!doc.category) return;
-
-        /// skip if not claimed yet
-        if (!doc.claimedBy) return;
-
         const points = await req.payload.find({
           collection: `points`,
           where: {
-            claimable: doc.id,
+            claimable: {
+              equals: doc.id,
+            },
           },
         });
-
-        console.log(`points`, points);
 
         /// skip if already claimed
         if (points.docs.length > 1) return;
