@@ -43,37 +43,44 @@ export const rewardsProgram = ({ fields, context }: RewardsProgram): CollectionC
       label: `Rewards`,
       type: `tabs`,
       tabs: [
-        {
-          name: `leaderboard`,
-          label: `Leaderboard`,
-          fields: [
-            {
-              required: true,
-              name: `epochName`,
-              label: `Epoch name`,
-              type: `text`,
-              access: {
-                update: () => false,
-                create: admins,
-              },
-            },
-            {
-              required: true,
-              name: `description`,
-              label: `Epoch description`,
-              access: {
-                update: admins,
-                create: admins,
-              },
-              type: `textarea`,
-            },
-            {
-              name: `image`,
-              type: `upload`,
-              relationTo: `media`,
-            },
-          ],
-        },
+        // {
+        //   name: `leaderboard`,
+        //   label: `Leaderboard`,
+        //   fields: [
+        //     {
+        //       required: true,
+        //       name: `epochName`,
+        //       label: `Epoch name`,
+        //       type: `text`,
+        //       access: {
+        //         read: () => true,
+        //         update: () => false,
+        //         create: admins,
+        //       },
+        //     },
+        //     {
+        //       required: true,
+        //       name: `description`,
+        //       label: `Epoch description`,
+        //       access: {
+        //         read: () => true,
+        //         update: admins,
+        //         create: admins,
+        //       },
+        //       type: `textarea`,
+        //     },
+        //     {
+        //       name: `image`,
+        //       type: `upload`,
+        //       relationTo: `media`,
+        //       access: {
+        //         read: () => true,
+        //         update: admins,
+        //         create: admins,
+        //       },
+        //     },
+        //   ],
+        // },
         {
           name: `details`,
           label: `Details`,
@@ -84,6 +91,7 @@ export const rewardsProgram = ({ fields, context }: RewardsProgram): CollectionC
               required: true,
               type: `number`,
               access: {
+                read: () => true,
                 update: () => false,
                 create: admins,
               },

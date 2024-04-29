@@ -14,9 +14,11 @@ export interface Config {
     media: Media;
     users: User;
     redirects: Redirect;
+    mints: Mint;
     'deploy-collection': DeployCollection;
     'rewards-program': RewardsProgram;
     referral: Referral;
+    points: Points;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -53,8 +55,6 @@ export interface Item {
   };
   claimedBy?: (string | null) | User;
   claimedAt?: string | null;
-  tokenId?: string | null;
-  rewardsPointsEarned?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -94,11 +94,6 @@ export interface DeployCollection {
 export interface RewardsProgram {
   id: string;
   title: string;
-  leaderboard: {
-    epochName: string;
-    description: string;
-    image?: string | Media | null;
-  };
   details: {
     pointsPerClaim: number;
   };
@@ -287,6 +282,13 @@ export interface Page {
             blockName?: string | null;
             blockType: 'roadmap';
           }
+        | {
+            sectionID?: string | null;
+            rewardsProgram?: (string | null) | RewardsProgram;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'leaderboard';
+          }
       )[]
     | null;
   meta?: {
@@ -318,6 +320,19 @@ export interface Redirect {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mints".
+ */
+export interface Mint {
+  id: string;
+  tokenId?: string | null;
+  claimable?: (string | null) | Item;
+  user?: (string | null) | User;
+  category?: (string | null) | Category;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "referral".
  */
 export interface Referral {
@@ -325,6 +340,19 @@ export interface Referral {
   title?: string | null;
   referralCode?: string | null;
   points?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "points".
+ */
+export interface Points {
+  id: string;
+  user?: (string | null) | User;
+  rewardProgram?: (string | null) | RewardsProgram;
+  rewardsPointsEarned?: number | null;
+  claimable?: (string | null) | Item;
   updatedAt: string;
   createdAt: string;
 }
