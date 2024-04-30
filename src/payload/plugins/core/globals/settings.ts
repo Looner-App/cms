@@ -54,6 +54,9 @@ export const settings = ({ globals }: Settings): Config['globals'] => [
                 type: `relationship`,
                 relationTo: `rewards-program`,
                 hasMany: true,
+                admin: {
+                  description: `Boost referral points earned by rewards program.`,
+                },
               },
             ],
           },
