@@ -1,7 +1,7 @@
 import type { AfterOperationHook } from 'payload/dist/collections/config/types';
 import type { CollectionConfig } from 'payload/types';
 
-import type { Settings } from '../types';
+import { type Settings, SettingsKeys } from '../types';
 
 export type Referral = {
   hooks: CollectionConfig['hooks'];
@@ -10,8 +10,10 @@ export type Referral = {
 export const referralCreate: AfterOperationHook = async ({ operation, req, result }) => {
   if (operation === `create`) {
     try {
-      const { invitationReferralCode } = result;
+      const { invitationReferralCode, id } = result;
       if (!invitationReferralCode) return;
+
+      console.log(`RESULT`, JSON.stringify(result));
 
       const inviter = await req.payload.find({
         collection: `users`,
@@ -20,8 +22,10 @@ export const referralCreate: AfterOperationHook = async ({ operation, req, resul
         },
       });
 
-      inviter.docs.map(async inviter => {
-        const inviterReferralCode = inviter.referralCode;
+      console.log(`INVITER`, JSON.stringify(inviter));
+
+      inviter.docs.forEach(async user => {
+        const inviterReferralCode = user.referralCode;
         if (!inviterReferralCode) return;
 
         const inviterReferral = await req.payload.find({
@@ -35,13 +39,76 @@ export const referralCreate: AfterOperationHook = async ({ operation, req, resul
           slug: `core`,
         })) as Settings;
 
-        inviterReferral.docs.map(async inviterReferralData => {
+        const pointsPerReferral = Number(coreSettings[SettingsKeys.PointsPerReferral]);
+
+        inviterReferral.docs.forEach(async (inviterReferralData: any) => {
           await req.payload.update({
             collection: `referral`,
             id: inviterReferralData.id,
             data: {
-              points: Number(inviterReferralData.points) + Number(coreSettings.pointsPerReferral),
+              points: Number(inviterReferralData.points) + pointsPerReferral,
             },
+          });
+
+          coreSettings[SettingsKeys.RewardsProgram].forEach(async (rewardsProgram: any) => {
+            const pointsUser = await req.payload.find({
+              collection: `points`,
+              where: {
+                and: [
+                  {
+                    user: {
+                      equals: user.id,
+                    },
+                  },
+                  {
+                    rewardsProgram: {
+                      equals: rewardsProgram.id,
+                    },
+                  },
+                ],
+              },
+            });
+            if (pointsUser.docs.length > 0) {
+              /// if already exist, increment the points and save in the claims array the new claim
+              const rewardsPointsEarned = Number(pointsUser.docs[0].rewardsPointsEarned);
+              const newPoints = rewardsPointsEarned + pointsPerReferral;
+              const referrals = (pointsUser.docs[0].referrals || []) as any;
+
+              if (referrals.some((referral: any) => referral.referral.id === id)) {
+                throw new Error(`Already referred`);
+              }
+
+              await req.payload.update({
+                collection: `points`,
+                id: pointsUser.docs[0].id,
+                data: {
+                  rewardsPointsEarned: newPoints,
+                  referrals: [
+                    {
+                      referral: id,
+                      rewardsPointsEarned: pointsPerReferral,
+                    },
+                  ].concat(
+                    referrals.map(referralData => {
+                      return {
+                        referral: referralData.referral.id,
+                        rewardsPointsEarned: referralData.rewardsPointsEarned,
+                      };
+                    }),
+                  ),
+                },
+              });
+            } else {
+              await req.payload.create({
+                collection: `points`,
+                data: {
+                  referrals: [{ referral: id, rewardsPointsEarned: pointsPerReferral }],
+                  rewardsPointsEarned: pointsPerReferral,
+                  user: user.id,
+                  rewardsProgram: rewardsProgram.id,
+                },
+              });
+            }
           });
         });
       });

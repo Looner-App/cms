@@ -22,9 +22,14 @@ export const points = ({ fields, context }: Points): CollectionConfig['fields'] 
         admin: {
           readOnly: true,
         },
+        access: {
+          update: () => false,
+          create: () => false,
+          read: () => true,
+        },
       },
       {
-        name: `rewardProgram`,
+        name: `rewardsProgram`,
         label: `Reward program`,
         type: `relationship`,
         access: {
@@ -51,10 +56,72 @@ export const points = ({ fields, context }: Points): CollectionConfig['fields'] 
         },
       },
       {
-        name: `claimable`,
-        label: `Claimable`,
-        type: `relationship`,
-        relationTo: `items`,
+        name: `claims`,
+        label: `Claims`,
+        type: `array`,
+        fields: [
+          {
+            name: `claimable`,
+            label: `Claimable`,
+            type: `relationship`,
+            relationTo: `items`,
+            admin: {
+              readOnly: true,
+            },
+            access: {
+              update: () => false,
+              create: () => false,
+              read: () => true,
+            },
+          },
+          {
+            name: `rewardsPointsEarned`,
+            label: `Rewards points earned`,
+            type: `number`,
+            access: {
+              update: () => false,
+              create: () => false,
+              read: () => true,
+            },
+            admin: {
+              readOnly: true,
+            },
+          },
+        ],
+      },
+      {
+        name: `referrals`,
+        label: `Referrals`,
+        type: `array`,
+        fields: [
+          {
+            name: `referral`,
+            label: `Referral`,
+            type: `relationship`,
+            relationTo: `users`,
+            admin: {
+              readOnly: true,
+            },
+            access: {
+              update: () => false,
+              create: () => false,
+              read: () => true,
+            },
+          },
+          {
+            name: `rewardsPointsEarned`,
+            label: `Rewards points earned`,
+            type: `number`,
+            access: {
+              update: () => false,
+              create: () => false,
+              read: () => true,
+            },
+            admin: {
+              readOnly: true,
+            },
+          },
+        ],
       },
     ];
   }

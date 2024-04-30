@@ -49,6 +49,12 @@ export const settings = ({ globals }: Settings): Config['globals'] => [
                   return true;
                 },
               },
+              {
+                name: SettingsKeys.RewardsProgram,
+                type: `relationship`,
+                relationTo: `rewards-program`,
+                hasMany: true,
+              },
             ],
           },
         ],

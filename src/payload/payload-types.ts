@@ -350,7 +350,7 @@ export interface Referral {
 export interface Points {
   id: string;
   user?: (string | null) | User;
-  rewardProgram?: (string | null) | RewardsProgram;
+  rewardsProgram?: (string | null) | RewardsProgram;
   rewardsPointsEarned?: number | null;
   claimable?: (string | null) | Item;
   updatedAt: string;

@@ -12,18 +12,6 @@ export const rewardsProgramUpdate: CollectionAfterOperationHook = async ({
   if (operation === `update`) {
     try {
       result.docs.forEach(async (doc: any) => {
-        const points = await req.payload.find({
-          collection: `points`,
-          where: {
-            claimable: {
-              equals: doc.id,
-            },
-          },
-        });
-
-        /// skip if already claimed
-        if (points.docs.length > 1) return;
-
         const {
           rewardProgram: {
             id: rewardProgramId,
@@ -31,15 +19,70 @@ export const rewardsProgramUpdate: CollectionAfterOperationHook = async ({
           },
         } = doc.category;
 
-        await req.payload.create({
+        const pointsUser = await req.payload.find({
           collection: `points`,
-          data: {
-            claimable: doc.id,
-            rewardsPointsEarned: pointsPerClaim,
-            user: doc.claimedBy.id,
-            rewardProgram: rewardProgramId,
+          where: {
+            and: [
+              {
+                user: {
+                  equals: doc.claimedBy.id,
+                },
+              },
+              {
+                rewardsProgram: {
+                  equals: rewardProgramId,
+                },
+              },
+            ],
           },
         });
+
+        if (pointsUser.docs.length > 0) {
+          /// if already exist, increment the points and save in the claims array the new claim
+          const rewardsPointsEarned = Number(pointsUser.docs[0].rewardsPointsEarned);
+          const newPoints = rewardsPointsEarned + pointsPerClaim;
+          const claims = (pointsUser.docs[0].claims || []) as any;
+
+          if (claims.some((claimed: any) => claimed.claimable.id === doc.id)) {
+            throw new Error(`Already claimed`);
+          }
+
+          await req.payload.update({
+            collection: `points`,
+            id: pointsUser.docs[0].id,
+            data: {
+              rewardsPointsEarned: newPoints,
+              claims: [
+                {
+                  claimable: doc.id,
+                  rewardsPointsEarned: pointsPerClaim,
+                },
+              ].concat(
+                claims.map(claimData => {
+                  return {
+                    claimable: claimData.claimable.id,
+                    rewardsPointsEarned: claimData.rewardsPointsEarned,
+                  };
+                }),
+              ),
+            },
+          });
+        } else {
+          await req.payload.create({
+            collection: `points`,
+            data: {
+              claims: [
+                {
+                  claimable: doc.id,
+                  rewardsPointsEarned: pointsPerClaim,
+                },
+              ],
+              rewardsPointsEarned: pointsPerClaim,
+              user: doc.claimedBy.id,
+              rewardsProgram: rewardProgramId,
+            },
+          });
+        }
       });
     } catch (error) {
       const msg = error instanceof Error ? error.message : error;

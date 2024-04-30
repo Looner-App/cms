@@ -24,6 +24,7 @@ export const rewardsProgram = ({ fields, context }: RewardsProgram): CollectionC
         access: {
           update: () => false,
           create: admins,
+          read: () => true,
         },
         relationTo: `rewards-program`,
       },
@@ -38,7 +39,6 @@ export const rewardsProgram = ({ fields, context }: RewardsProgram): CollectionC
       label: `Title`,
       type: `text`,
     },
-
     {
       label: `Rewards`,
       type: `tabs`,
