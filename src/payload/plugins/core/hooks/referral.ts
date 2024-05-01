@@ -13,16 +13,12 @@ export const referralCreate: AfterOperationHook = async ({ operation, req, resul
       const { invitationReferralCode, id } = result;
       if (!invitationReferralCode) return;
 
-      console.log(`RESULT`, JSON.stringify(result));
-
       const inviter = await req.payload.find({
         collection: `users`,
         where: {
           referralCode: { equals: invitationReferralCode },
         },
       });
-
-      console.log(`INVITER`, JSON.stringify(inviter));
 
       inviter.docs.forEach(async user => {
         const inviterReferralCode = user.referralCode;
