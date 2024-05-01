@@ -1,11 +1,20 @@
 import type { Block } from 'payload/types';
 
-import { sectionID } from '../../fields';
+import { richTextSlate, sectionID } from '../../fields';
 
 export const roadmap: Block = {
   slug: `roadmap`,
   fields: [
     sectionID(),
+    richTextSlate({
+      name: `title`,
+      elements: [`h`, `link`],
+    }),
+    richTextSlate({
+      name: `description`,
+      label: `Description`,
+      elements: [`link`],
+    }),
     {
       name: `image`,
       type: `upload`,
