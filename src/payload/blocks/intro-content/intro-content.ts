@@ -57,6 +57,12 @@ export const introContent: Block = {
       },
     }),
     {
+      name: `displaySocialMedia`,
+      label: `Display Social Media`,
+      type: `checkbox`,
+      defaultValue: false,
+    },
+    {
       type: `select`,
       name: `cardVariant`,
       label: `Card Variant`,

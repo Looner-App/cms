@@ -225,6 +225,7 @@ export interface Page {
                   id?: string | null;
                 }[]
               | null;
+            displaySocialMedia?: boolean | null;
             cardVariant?: ('default' | 'primary' | 'secondary') | null;
             id?: string | null;
             blockName?: string | null;
@@ -352,7 +353,20 @@ export interface Points {
   user?: (string | null) | User;
   rewardsProgram?: (string | null) | RewardsProgram;
   rewardsPointsEarned?: number | null;
-  claimable?: (string | null) | Item;
+  claims?:
+    | {
+        claimable?: (string | null) | Item;
+        rewardsPointsEarned?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  referrals?:
+    | {
+        referral?: (string | null) | User;
+        rewardsPointsEarned?: number | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -460,6 +474,7 @@ export interface OwlProtocol {
 export interface Core {
   id: string;
   pointsPerReferral: number;
+  rewardsProgram?: (string | RewardsProgram)[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
