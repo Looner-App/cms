@@ -42,22 +42,22 @@ jobs:
         run: |
           touch .env
           echo PORT=${{ vars.PORT }} >> .env
-          echo DATABASE_URL=${{ secrets.DATABASE_URL }} >> .env
-          echo PAYLOAD_SECRET=${{ secrets.PAYLOAD_SECRET }} >> .env
-          echo PAYLOAD_PUBLIC_SITE_NAME=${{ secrets.PAYLOAD_PUBLIC_SITE_NAME }} >> .env
-          echo PAYLOAD_PUBLIC_SERVER_URL=${{ secrets.PAYLOAD_PUBLIC_SERVER_URL }} >> .env
-          echo PAYLOAD_PUBLIC_FRONTEND_URL=${{ secrets.PAYLOAD_PUBLIC_FRONTEND_URL }} >> .env
-          echo PAYLOAD_PUBLIC_LOCALE_DEFAULT=${{ secrets.PAYLOAD_PUBLIC_LOCALE_DEFAULT }} >> .env
-          echo PAYLOAD_PUBLIC_LOCALE_LIST=${{ secrets.PAYLOAD_PUBLIC_LOCALE_LIST }} >> .env
-          echo PAYLOAD_PUBLIC_DRAFT_SECRET=${{ secrets.PAYLOAD_PUBLIC_DRAFT_SECRET }} >> .env
-          echo REVALIDATION_KEY=${{ secrets.REVALIDATION_KEY }} >> .env
-          echo GOOGLE_RECAPTCHA_SECRET=${{ secrets.GOOGLE_RECAPTCHA_SECRET }} >> .env
-          echo SMTP_FROM_EMAIL=${{ secrets.SMTP_FROM_EMAIL }} >> .env
-          echo SMTP_ADMIN_EMAIL=${{ secrets.SMTP_ADMIN_EMAIL }} >> .env
-          echo SMTP_HOST=${{ secrets.SMTP_HOST }} >> .env
-          echo SMTP_PORT=${{ secrets.SMTP_PORT }} >> .env
-          echo SMTP_USER=${{ secrets.SMTP_USER }} >> .env
-          echo SMTP_PASS=${{ secrets.SMTP_PASS }} >> .env
+          echo DATABASE_URL=${{ vars.DATABASE_URL }} >> .env
+          echo PAYLOAD_SECRET=${{ vars.PAYLOAD_SECRET }} >> .env
+          echo PAYLOAD_PUBLIC_SITE_NAME=${{ vars.PAYLOAD_PUBLIC_SITE_NAME }} >> .env
+          echo PAYLOAD_PUBLIC_SERVER_URL=${{ vars.PAYLOAD_PUBLIC_SERVER_URL }} >> .env
+          echo PAYLOAD_PUBLIC_FRONTEND_URL=${{ vars.PAYLOAD_PUBLIC_FRONTEND_URL }} >> .env
+          echo PAYLOAD_PUBLIC_LOCALE_DEFAULT=${{ vars.PAYLOAD_PUBLIC_LOCALE_DEFAULT }} >> .env
+          echo PAYLOAD_PUBLIC_LOCALE_LIST=${{ vars.PAYLOAD_PUBLIC_LOCALE_LIST }} >> .env
+          echo PAYLOAD_PUBLIC_DRAFT_SECRET=${{ vars.PAYLOAD_PUBLIC_DRAFT_SECRET }} >> .env
+          echo REVALIDATION_KEY=${{ vars.REVALIDATION_KEY }} >> .env
+          echo GOOGLE_RECAPTCHA_SECRET=${{ vars.GOOGLE_RECAPTCHA_SECRET }} >> .env
+          echo SMTP_FROM_EMAIL=${{ vars.SMTP_FROM_EMAIL }} >> .env
+          echo SMTP_ADMIN_EMAIL=${{ vars.SMTP_ADMIN_EMAIL }} >> .env
+          echo SMTP_HOST=${{ vars.SMTP_HOST }} >> .env
+          echo SMTP_PORT=${{ vars.SMTP_PORT }} >> .env
+          echo SMTP_USER=${{ vars.SMTP_USER }} >> .env
+          echo SMTP_PASS=${{ vars.SMTP_PASS }} >> .env
 
       - name: Build and push
         uses: docker/build-push-action@v5
