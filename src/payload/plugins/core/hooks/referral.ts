@@ -46,7 +46,10 @@ export const referralCreate: AfterOperationHook = async ({ operation, req, resul
             },
           });
 
-          coreSettings[SettingsKeys.RewardsProgram].forEach(async (rewardsProgram: any) => {
+          const rewardsProgramAvailabled = coreSettings[SettingsKeys.RewardsProgram];
+          if (!rewardsProgramAvailabled) return result;
+
+          rewardsProgramAvailabled.forEach(async (rewardsProgram: any) => {
             const pointsUser = await req.payload.find({
               collection: `points`,
               where: {
@@ -64,6 +67,7 @@ export const referralCreate: AfterOperationHook = async ({ operation, req, resul
                 ],
               },
             });
+
             if (pointsUser.docs.length > 0) {
               /// if already exist, increment the points and save in the claims array the new claim
               const rewardsPointsEarned = Number(pointsUser.docs[0].rewardsPointsEarned);

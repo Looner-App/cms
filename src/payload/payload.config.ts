@@ -79,6 +79,9 @@ dotenv.config({
 export default buildConfig({
   db: mongooseAdapter({
     url: process.env.DATABASE_URI,
+    connectOptions: {
+      dbName: `looner-cms`,
+    },
   }),
   editor: slateEditor({}),
   admin: {

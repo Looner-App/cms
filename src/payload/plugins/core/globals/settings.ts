@@ -52,6 +52,7 @@ export const settings = ({ globals }: Settings): Config['globals'] => [
               {
                 name: SettingsKeys.RewardsProgram,
                 type: `relationship`,
+                label: `Rewards program + referral`,
                 relationTo: `rewards-program`,
                 hasMany: true,
                 admin: {
