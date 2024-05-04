@@ -42,7 +42,7 @@ jobs:
         run: |
           touch .env
           echo PORT=${{ vars.PORT }} >> .env
-          echo DATABASE_URL=${{ vars.DATABASE_URL }} >> .env
+          echo DATABASE_URI=${{ vars.DATABASE_URI }} >> .env
           echo PAYLOAD_SECRET=${{ vars.PAYLOAD_SECRET }} >> .env
           echo PAYLOAD_PUBLIC_SITE_NAME=${{ vars.PAYLOAD_PUBLIC_SITE_NAME }} >> .env
           echo PAYLOAD_PUBLIC_SERVER_URL=${{ vars.PAYLOAD_PUBLIC_SERVER_URL }} >> .env
