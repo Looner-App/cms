@@ -24,7 +24,7 @@ RUN yarn build:payload && yarn build:server && yarn copyfiles
 
 ## Runtime Image
 FROM base as runtime
-LABEL org.opencontainers.image.source=https://github.com/wellitongervickas/looner-cms
+LABEL org.opencontainers.image.source=https://github.com/looner-app/cms
 ENV NODE_ENV=production
 
 COPY package*.json ./
