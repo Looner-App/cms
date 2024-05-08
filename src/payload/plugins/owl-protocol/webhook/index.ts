@@ -10,6 +10,7 @@ import { mintCollection } from './mint-collection';
 
 export type { CreateUser, DeployCollection, GetUser, MintCollection };
 
+/// todo: try to use owlprotocol/core-trpc package
 export const webhook = {
   deployCollection,
   mintCollection,

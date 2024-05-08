@@ -51,6 +51,7 @@ export const Pages: CollectionConfig = {
             {
               name: `layout`,
               type: `blocks`,
+              /// todo: move this to core plugin
               blocks: [introContent, mapItems, cards, roadmap, leaderboard],
             },
           ],

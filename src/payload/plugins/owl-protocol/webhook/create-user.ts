@@ -1,8 +1,6 @@
 import type { Payload } from 'payload';
 
-import APIError from 'payload/dist/errors/APIError';
-
-import { type Settings, SettingsKeys } from '../types';
+import { proxy } from './proxy';
 
 export type CreateUserResponse = {
   email: string;
@@ -17,38 +15,15 @@ export type CreateUser = {
   payload: Payload;
 };
 
-export const createUser = async ({
-  email,
-  fullname,
-  externalId,
-  payload,
-}: CreateUser): Promise<CreateUserResponse> => {
-  const owlSettings = (await payload.findGlobal({
-    slug: `owlProtocol`,
-  })) as Settings;
-
-  const headers = new Headers();
-  headers.set(`Accept`, `application/json`);
-  headers.set(`content-type`, `application/json`);
-  headers.set(`x-api-key`, `${owlSettings[SettingsKeys.XApiKey]}`);
-
-  const result = await fetch(`${owlSettings[SettingsKeys.API]}` + `/project/projectUser`, {
+export const createUser = async ({ email, fullname, externalId, payload }: CreateUser) => {
+  return proxy<CreateUserResponse>({
     method: `POST`,
-    headers,
-    body: JSON.stringify({
-      projectId: owlSettings[SettingsKeys.ProjectId],
-      authMode: `project`,
+    path: `/project/projectUser`,
+    params: {
       email,
       fullname,
       externalId,
-    }),
+    },
+    payload,
   });
-
-  if (result.status !== 200) {
-    const msg = await result.text();
-    throw new APIError(msg, result.status);
-  }
-
-  const data = await result.json();
-  return data;
 };

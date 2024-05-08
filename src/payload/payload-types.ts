@@ -277,6 +277,22 @@ export interface Page {
           }
         | {
             sectionID?: string | null;
+            title?: {
+              slate?:
+                | {
+                    [k: string]: unknown;
+                  }[]
+                | null;
+              html?: string | null;
+            };
+            description?: {
+              slate?:
+                | {
+                    [k: string]: unknown;
+                  }[]
+                | null;
+              html?: string | null;
+            };
             image?: string | Media | null;
             imageMobile?: string | Media | null;
             id?: string | null;
@@ -286,6 +302,7 @@ export interface Page {
         | {
             sectionID?: string | null;
             rewardsProgram?: (string | null) | RewardsProgram;
+            cardVariant?: ('default' | 'primary' | 'secondary') | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'leaderboard';
