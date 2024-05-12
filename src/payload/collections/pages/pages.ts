@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload/types';
 
 import { admins, adminsOrPublished } from '../../access';
-import { cards, introContent, leaderboard, mapItems } from '../../blocks';
+import { cards, introContent, mapItems } from '../../blocks';
 import { roadmap } from '../../blocks/roadmap';
 import { slug } from '../../fields';
 import { populatePublishedDate } from '../../hooks/populate-published-date';
@@ -52,7 +52,7 @@ export const Pages: CollectionConfig = {
               name: `layout`,
               type: `blocks`,
               /// todo: move this to core plugin
-              blocks: [introContent, mapItems, cards, roadmap, leaderboard],
+              blocks: [introContent, mapItems, cards, roadmap],
             },
           ],
         },

@@ -121,6 +121,7 @@ export const Items: CollectionConfig = {
         },
       },
     },
+    /// todo: move to core
     {
       name: `location`,
       type: `point`,
@@ -164,6 +165,7 @@ export const Items: CollectionConfig = {
       label: `Description`,
       elements: [`link`],
     }),
+    /// todo: move to core
     {
       name: `claimedBy`,
       type: `relationship`,
@@ -173,6 +175,7 @@ export const Items: CollectionConfig = {
         position: `sidebar`,
       },
     },
+    /// todo: move to core
     {
       name: `claimedAt`,
       type: `date`,
