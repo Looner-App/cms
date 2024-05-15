@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload/types';
 
+import randomLocation from 'random-location';
 import randomstring from 'randomstring';
 
 import { admins, anyone } from '../../access';
@@ -29,6 +30,54 @@ export const Items: CollectionConfig = {
     update: admins,
     create: admins,
     delete: admins,
+  },
+  hooks: {
+    afterOperation: [
+      async ({ operation, req, result }) => {
+        if (operation === `create`) {
+          if (!result.batchCreationCount) return result;
+
+          /// update the first item with #1
+          await req.payload.update({
+            collection: `items`,
+            id: result.id,
+            data: {
+              title: `${result.title} #1`,
+            },
+          });
+
+          /// create upcoming items as batch
+          for (let i = 0; i < Number(result.batchCreationCount); i++) {
+            const lng = result.location[0];
+            const lat = result.location[1];
+
+            const randomRadiusLocation = randomLocation.randomCirclePoint(
+              {
+                latitude: lat,
+                longitude: lng,
+              },
+              100000,
+              Math.random,
+            );
+
+            await req.payload.create({
+              collection: `items`,
+              data: {
+                /// copy all fields
+                title: `${result.title} #${i + 1}`,
+                publicUniqueLink: result.publicUniqueLink,
+                category: result.category,
+                location: [randomRadiusLocation.longitude, randomRadiusLocation.latitude],
+                image: result.image,
+                desc: result.desc,
+              },
+            });
+          }
+        }
+
+        return result;
+      },
+    ],
   },
   fields: [
     {
@@ -84,7 +133,12 @@ export const Items: CollectionConfig = {
       type: `text`,
       unique: true,
       access: {
-        read: admins,
+        read: ({ req, siblingData }) => {
+          if (siblingData?.publicUniqueLink) {
+            return true;
+          }
+          return admins({ req });
+        },
       },
       admin: {
         position: `sidebar`,
@@ -109,6 +163,50 @@ export const Items: CollectionConfig = {
             return value;
           },
         ],
+      },
+    },
+    {
+      name: `publicUniqueLink`,
+      type: `checkbox`,
+      label: `Public Unique Link`,
+      admin: {
+        position: `sidebar`,
+      },
+    },
+    {
+      name: `batchCreation`,
+      type: `checkbox`,
+      label: `Batch Creation`,
+      access: {
+        read: admins,
+        update: () => false,
+        create: admins,
+      },
+    },
+    {
+      name: `batchCreationCount`,
+      type: `number`,
+      label: `Batch Creation Count`,
+      admin: {
+        condition: (_, siblingData) => {
+          return siblingData?.batchCreation;
+        },
+      },
+      access: {
+        read: admins,
+        update: () => false,
+        create: admins,
+      },
+      validate: value => {
+        if (!value) {
+          return `Batch Creation Count should not empty`;
+        }
+
+        if (value < 1) {
+          return `Batch Creation Count should greater than 0`;
+        }
+
+        return true;
       },
     },
     {

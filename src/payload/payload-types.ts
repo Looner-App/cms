@@ -39,6 +39,9 @@ export interface Item {
   category: string | Category;
   barcode?: string | null;
   uniqueLink?: string | null;
+  publicUniqueLink?: boolean | null;
+  batchCreation?: boolean | null;
+  batchCreationCount?: number | null;
   /**
    * @minItems 2
    * @maxItems 2
