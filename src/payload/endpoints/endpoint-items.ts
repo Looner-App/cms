@@ -1,6 +1,7 @@
 import type { PayloadHandler } from 'payload/config';
 
 import payload from 'payload';
+import { APIError } from 'payload/errors';
 
 import { emailClaimItem } from '../mjml';
 import { checkRole } from '../utilities';
@@ -20,20 +21,20 @@ export const getItem: PayloadHandler = async (req, res, next) => {
         claimedBy: { equals: null },
       },
     });
-
     if (result && result.docs.length > 0) {
       const data = result.docs[0];
-
       return res.json({
         data,
         message: `You found item <b>${data.title}</b>`,
       });
+    } else {
+      throw new APIError(`Item not found`, 404);
     }
   } catch (error) {
     next(error);
   }
 
-  return res.status(404).json({ errors: [{ message: `Item not found` }] });
+  next(new APIError(`Item not found`, 404));
 };
 
 export const claimItem: PayloadHandler = async (req, res, next) => {
@@ -72,10 +73,12 @@ export const claimItem: PayloadHandler = async (req, res, next) => {
       });
 
       return res.json({ message: `Claim success` });
+    } else {
+      throw new APIError(`Item not found`, 404);
     }
   } catch (error) {
     next(error);
   }
 
-  return res.status(404).json({ errors: [{ message: `Item not found` }] });
+  next(new APIError(`Item not found`, 404));
 };

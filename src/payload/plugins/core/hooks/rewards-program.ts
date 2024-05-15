@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload/types';
 
+import { APIError } from 'payload/errors';
+
 import type { RewardsProgram as RewardsProgramType } from '../../../payload-types';
 
 export type RewardsProgram = {
@@ -102,7 +104,7 @@ export const rewardsProgram = ({ hooks }: RewardsProgram): CollectionConfig['hoo
           } catch (error) {
             const msg = error instanceof Error ? error.message : error;
             req.payload.logger.error(`Error setting points: ${msg}`);
-            return result;
+            throw new APIError(msg, 400);
           }
         }
 

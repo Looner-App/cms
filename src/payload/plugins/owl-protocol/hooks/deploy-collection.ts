@@ -49,9 +49,12 @@ export const deployCollection = ({
             req.payload.logger.info(
               `Collection deployed successfully: ${JSON.stringify(deployedCollection)}`,
             );
+
+            return result;
           } catch (error) {
             const msg = error instanceof Error ? error.message : error;
             req.payload.logger.error(`Error deploying collection: ${msg}`);
+            return result;
           }
         }
 

@@ -154,7 +154,7 @@ export const mintCollection = ({ hooks, context }: MintCollection): CollectionCo
           } catch (error) {
             const msg = error instanceof Error ? error.message : error;
             req.payload.logger.error(`Error minting collection: ${msg}`);
-            return result;
+            throw new APIError(msg, 400);
           }
         }
         return result;

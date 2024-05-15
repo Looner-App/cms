@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload/types';
 
+import { APIError } from 'payload/errors';
+
 import type { RewardsProgram } from '../../../payload-types';
 
 import { type Settings, SettingsKeys } from '../types';
@@ -152,7 +154,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
           } catch (error) {
             const msg = error instanceof Error ? error.message : error;
             req.payload.logger.error(`Error setting referral: ${msg}`);
-            return result;
+            throw new APIError(msg, 400);
           }
         }
 
