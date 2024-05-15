@@ -2,11 +2,7 @@ import type { CollectionConfig } from 'payload/types';
 
 /// @todo: does not import as external do it as plugin utility from owl plugin
 import { admins } from '../../../access';
-
-export enum DeployCollectionContext {
-  Categories,
-  DeployCollection,
-}
+import { DeployCollectionContext } from '../types';
 
 export const deployCollection = (
   fields: CollectionConfig['fields'],
@@ -77,6 +73,25 @@ export const deployCollection = (
                   return collectionAddress && data.id;
                 },
                 readOnly: true,
+              },
+            },
+          ],
+        },
+        {
+          name: `settings`,
+          label: `Settings`,
+          fields: [
+            {
+              name: `maxMintPerUser`,
+              label: `Max Mint Per User`,
+              type: `number`,
+              required: true,
+              defaultValue: 0,
+              admin: {
+                description: `0 means no limit`,
+              },
+              access: {
+                create: admins,
               },
             },
           ],

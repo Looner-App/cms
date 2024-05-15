@@ -1,16 +1,31 @@
 import type { CollectionConfig } from 'payload/types';
 
-import type { DeployCollection } from '../../../payload-types';
+import type { DeployCollection as DeployCollectionType } from '../../../payload-types';
 
+import { DeployCollectionContext } from '../types';
 import { webhook } from '../webhook';
 
-export const deployCollection = (): CollectionConfig['hooks'] => {
+export type DeployCollection = {
+  context: DeployCollectionContext;
+  hooks: CollectionConfig['hooks'];
+};
+
+export const deployCollection = ({
+  hooks,
+  context,
+}: DeployCollection): CollectionConfig['hooks'] => {
+  if (context === DeployCollectionContext.Categories) {
+    return hooks;
+  }
+
   return {
+    ...hooks,
     afterOperation: [
+      ...(hooks?.afterOperation || []),
       async ({ result, operation, req }) => {
         if (operation === `create`) {
           try {
-            const { details } = result as unknown as DeployCollection;
+            const { details } = result as unknown as DeployCollectionType;
 
             const { name, symbol, collectionAddress } = details;
             if (collectionAddress) return result;

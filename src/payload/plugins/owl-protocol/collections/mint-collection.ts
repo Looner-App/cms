@@ -4,8 +4,8 @@ import map from 'lodash/map';
 
 import { anyone } from '../../../access';
 import { fields } from '../fields';
-import { MintsContext } from '../fields/mint-collection';
 import { hooks } from '../hooks';
+import { MintsContext } from '../types';
 
 export type MintCollection = {
   collections: Config['collections'];
@@ -44,6 +44,7 @@ export const mintCollection = ({ collections }: MintCollection): Config['collect
 
       collection.hooks = hooks.mintCollection({
         hooks: collection.hooks,
+        context: MintsContext.Items,
       });
     }
 

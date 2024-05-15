@@ -11,3 +11,13 @@ export type Settings = TypeWithID &
   Record<string, unknown> & {
     [key in SettingsKeys]: number | string;
   };
+
+export enum DeployCollectionContext {
+  Categories,
+  DeployCollection,
+}
+
+export enum MintsContext {
+  Items,
+  Mints,
+}

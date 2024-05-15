@@ -5,8 +5,8 @@ import map from 'lodash/map';
 /// @todo: does not import as external do it as plugin utility from owl plugin
 import { admins, anyone } from '../../../access';
 import { fields } from '../fields';
-import { DeployCollectionContext } from '../fields/deploy-collection';
 import { hooks } from '../hooks';
+import { DeployCollectionContext } from '../types';
 
 export type DeployCollection = {
   collections: Config['collections'];
@@ -29,7 +29,10 @@ export const deployCollection = ({ collections }: DeployCollection): Config['col
         delete: admins,
       },
       fields: fields.deployCollection([], DeployCollectionContext.DeployCollection),
-      hooks: hooks.deployCollection(),
+      hooks: hooks.deployCollection({
+        hooks: {},
+        context: DeployCollectionContext.DeployCollection,
+      }),
     },
   ];
 
