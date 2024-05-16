@@ -57,6 +57,10 @@ export const Settings: GlobalConfig = {
                   name: `youtube`,
                   type: `text`,
                 },
+                {
+                  name: `telegram`,
+                  type: `text`,
+                },
               ],
             },
           ],
