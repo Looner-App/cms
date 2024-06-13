@@ -4,6 +4,7 @@ import type { User } from '../../payload-types';
 
 import { admins, adminsAndUser, anyone } from '../../access';
 import { emailForgotPassword } from '../../mjml';
+import strategy from '../../plugins/thirdweb/strategy';
 import { checkRole } from '../../utilities';
 import { userRegister } from './endpoints';
 import { ensureFirstUserIsAdmin, loginAfterCreate } from './hooks';
@@ -32,6 +33,12 @@ export const Users: CollectionConfig = {
     },
   ],
   auth: {
+    strategies: [
+      {
+        name: `jwt`,
+        strategy,
+      },
+    ],
     forgotPassword: {
       generateEmailSubject: () => {
         return `Reset Your Password - ${process.env.PAYLOAD_PUBLIC_SITE_NAME}`;
