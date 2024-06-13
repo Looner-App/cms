@@ -1,5 +1,8 @@
+import type { Response } from 'express';
 import type { PayloadRequest } from 'payload/types';
 import type { VerifyLoginPayloadParams } from 'thirdweb/auth';
+
+import Cookies from 'cookies';
 
 import { serverClientAuth } from './client';
 
@@ -14,48 +17,53 @@ export const verifyJWT = async (jwt: string) => {
 };
 
 /// authenticate payload
-export const auth = async (req: PayloadRequest) => {
+export const auth = async (req: PayloadRequest, res: Response) => {
   const payload: VerifyLoginPayloadParams = await req.body;
   const verifiedPayload = await serverClientAuth.verifyPayload(payload);
+  const cookies = new Cookies(req, res);
 
   if (verifiedPayload.valid) {
     const jwt = await serverClientAuth.generateJWT({
       payload: verifiedPayload.payload,
     });
 
-    req.cookies().set(`jwt`, jwt);
+    cookies.set(`jwt`, jwt);
 
-    return Response.json({ token: jwt });
+    return res.json({ token: jwt });
   }
 
-  return Response.error();
+  return res.send(401);
 };
 
 /// generate payload
-export const login = async (req: PayloadRequest) => {
+export const login = async (req: PayloadRequest, res: Response) => {
   const generatedPayload = await serverClientAuth.generatePayload({
     address: req.query.address as string,
   });
 
-  return Response.json(generatedPayload);
+  return res.json(generatedPayload);
 };
 
 /// account details
-export const account = async (req: PayloadRequest) => {
-  const jwt = req.cookies().get(`jwt`);
+export const account = async (req: PayloadRequest, res: Response) => {
+  const cookies = new Cookies(req, res);
 
-  if (!jwt?.value) {
-    return Response.json({ isLoggedIn: false });
+  const jwt = cookies.get(`jwt`);
+
+  if (!jwt) {
+    return res.json({ isLoggedIn: false });
   }
 
-  const authResult = await verifyJWT(jwt.value);
+  const authResult = await verifyJWT(jwt);
 
-  return Response.json({ isLoggedIn: authResult?.valid ?? false });
+  return res.json({ isLoggedIn: authResult?.valid ?? false });
 };
 
 /// logout
-export const logout = async (req: PayloadRequest) => {
-  req.cookies().delete(`jwt`);
-  req.user = null;
-  return Response.json({ success: true });
+export const logout = async (req: PayloadRequest, res: Response) => {
+  const cookies = new Cookies(req, res);
+
+  cookies.set(`jwt`, ``);
+
+  return res.json({ success: true });
 };

@@ -106,4 +106,6 @@ export const strategy = (ctx: Payload) => {
   return new StrategyProxy(ctx, thirdwebStrategy);
 };
 
+strategy.prototype.name = `thirdweb-strategy`;
+
 export default strategy;

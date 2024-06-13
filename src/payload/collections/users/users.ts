@@ -4,6 +4,7 @@ import type { User } from '../../payload-types';
 
 import { admins, adminsAndUser, anyone } from '../../access';
 import { emailForgotPassword } from '../../mjml';
+import * as endpointsv2 from '../../plugins/thirdweb/endpoints';
 import strategy from '../../plugins/thirdweb/strategy';
 import { checkRole } from '../../utilities';
 import { userRegister } from './endpoints';
@@ -31,11 +32,31 @@ export const Users: CollectionConfig = {
       method: `post`,
       path: `/register`,
     },
+    {
+      path: `/auth`,
+      method: `post`,
+      handler: endpointsv2.auth,
+    },
+    {
+      path: `/auth/login`,
+      method: `get`,
+      handler: endpointsv2.login,
+    },
+    {
+      path: `/auth/account`,
+      method: `get`,
+      handler: endpointsv2.account,
+    },
+    {
+      path: `/auth/logout`,
+      method: `get`,
+      handler: endpointsv2.logout,
+    },
   ],
   auth: {
     strategies: [
       {
-        name: `jwt`,
+        name: strategy.name,
         strategy,
       },
     ],
