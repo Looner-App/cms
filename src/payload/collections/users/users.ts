@@ -33,15 +33,16 @@ export const Users: CollectionConfig = {
       path: `/register`,
     },
     {
-      path: `/auth`,
-      method: `post`,
-      handler: endpointsv2.auth,
-    },
-    {
       path: `/auth/login`,
       method: `get`,
       handler: endpointsv2.login,
     },
+    {
+      path: `/auth`,
+      method: `post`,
+      handler: endpointsv2.auth,
+    },
+
     {
       path: `/auth/account`,
       method: `get`,

@@ -1,6 +1,5 @@
 import type { Response } from 'express';
 import type { PayloadRequest } from 'payload/types';
-import type { VerifyLoginPayloadParams } from 'thirdweb/auth';
 
 import Cookies from 'cookies';
 
@@ -16,25 +15,6 @@ export const verifyJWT = async (jwt: string) => {
     : null;
 };
 
-/// authenticate payload
-export const auth = async (req: PayloadRequest, res: Response) => {
-  const payload: VerifyLoginPayloadParams = await req.body;
-  const verifiedPayload = await serverClientAuth.verifyPayload(payload);
-  const cookies = new Cookies(req, res);
-
-  if (verifiedPayload.valid) {
-    const jwt = await serverClientAuth.generateJWT({
-      payload: verifiedPayload.payload,
-    });
-
-    cookies.set(`jwt`, jwt);
-
-    return res.json({ token: jwt });
-  }
-
-  return res.send(401);
-};
-
 /// generate payload
 export const login = async (req: PayloadRequest, res: Response) => {
   const generatedPayload = await serverClientAuth.generatePayload({
@@ -44,11 +24,33 @@ export const login = async (req: PayloadRequest, res: Response) => {
   return res.json(generatedPayload);
 };
 
+/// authenticate payload
+export const auth = async (req: PayloadRequest, res: Response) => {
+  const verifiedPayload = await serverClientAuth.verifyPayload(req.body);
+  const cookies = new Cookies(req, res);
+
+  if (verifiedPayload.valid) {
+    const jwt = await serverClientAuth.generateJWT({
+      payload: verifiedPayload.payload,
+    });
+
+    cookies.set(`jwt`, jwt, {
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
+    });
+
+    return res.json({ token: jwt });
+  }
+
+  return res.send(401);
+};
+
 /// account details
 export const account = async (req: PayloadRequest, res: Response) => {
   const cookies = new Cookies(req, res);
 
   const jwt = cookies.get(`jwt`);
+
+  console.log(`jwt`, jwt);
 
   if (!jwt) {
     return res.json({ isLoggedIn: false });
