@@ -1,46 +1,20 @@
-import type { Request } from 'express';
 import type { Payload } from 'payload';
 import type { User } from 'payload/auth';
 
-import { Strategy } from 'passport';
+import type { ServerClientAuth } from './client';
 
 import { ThirdwebStrategy } from './ThirdwebStrategy';
 import { Role } from './utils/roles';
 import { saltHashGenerator } from './utils/saltHashPassword';
 
-class StrategyProxy extends Strategy {
+export class AuthStrategy extends ThirdwebStrategy {
   ctx: Payload;
-  name = `thirdweb-strategy`;
-  proxiedStrategy: ThirdwebStrategy;
   slug: string;
 
-  constructor(ctx: Payload, strategy: ThirdwebStrategy) {
-    super();
+  constructor(ctx: Payload, client: ServerClientAuth) {
+    super(client);
     this.ctx = ctx;
-    this.proxiedStrategy = strategy;
     this.slug = `users`;
-  }
-
-  async authenticate(req: Request): Promise<void> {
-    try {
-      const authResult = await this.proxiedStrategy.authenticate(req);
-      if (!authResult) {
-        this.fail();
-        return;
-      }
-
-      const user = await this.findUser(this.ctx, authResult.sub);
-
-      if (!user) {
-        const newUser = await this.createUser(authResult.sub, Role.User);
-        this.successCallback(newUser);
-        return;
-      }
-
-      return this.successCallback(user);
-    } catch (e) {
-      this.fail();
-    }
   }
 
   createPassword() {
@@ -86,19 +60,30 @@ class StrategyProxy extends Strategy {
     return null;
   }
 
-  successCallback(user: User): void {
+  login(user: User): void {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
     this.success(user);
   }
+
+  async signIn(sub?: string): Promise<void> {
+    try {
+      if (!sub) {
+        this.fail();
+        return;
+      }
+
+      const user = await this.findUser(this.ctx, sub);
+
+      if (!user) {
+        const newUser = await this.createUser(sub, Role.User);
+        this.login(newUser);
+        return;
+      }
+
+      return this.login(user);
+    } catch (e) {
+      this.fail();
+    }
+  }
 }
-
-export const strategy = (ctx: Payload) => {
-  const thirdwebStrategy = new ThirdwebStrategy();
-
-  return new StrategyProxy(ctx, thirdwebStrategy);
-};
-
-strategy.prototype.name = `thirdweb-strategy`;
-
-export default strategy;

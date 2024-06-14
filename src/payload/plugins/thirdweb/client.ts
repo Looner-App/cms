@@ -20,3 +20,5 @@ export const serverClientAuth = createAuth({
     privateKey: `ede99aed9ee38e15d48acf771b299a6f8e98e3bd5864c9c24fcf0dfd3b8bb8dd`,
   }),
 });
+
+export type ServerClientAuth = ReturnType<typeof createAuth>;

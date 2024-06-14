@@ -4,8 +4,9 @@ import type { User } from '../../payload-types';
 
 import { admins, adminsAndUser, anyone } from '../../access';
 import { emailForgotPassword } from '../../mjml';
+import { serverClientAuth } from '../../plugins/thirdweb/client';
 import * as endpointsv2 from '../../plugins/thirdweb/endpoints';
-import strategy from '../../plugins/thirdweb/strategy';
+import { AuthStrategy } from '../../plugins/thirdweb/strategy';
 import { checkRole } from '../../utilities';
 import { userRegister } from './endpoints';
 import { ensureFirstUserIsAdmin, loginAfterCreate } from './hooks';
@@ -48,17 +49,14 @@ export const Users: CollectionConfig = {
       method: `get`,
       handler: endpointsv2.account,
     },
-    {
-      path: `/auth/logout`,
-      method: `get`,
-      handler: endpointsv2.logout,
-    },
   ],
   auth: {
     strategies: [
       {
-        name: strategy.name,
-        strategy,
+        name: AuthStrategy.name,
+        strategy: ctx => {
+          return new AuthStrategy(ctx, serverClientAuth);
+        },
       },
     ],
     forgotPassword: {
