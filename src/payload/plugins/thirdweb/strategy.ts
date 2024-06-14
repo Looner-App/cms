@@ -22,16 +22,9 @@ class StrategyProxy extends Strategy {
   }
 
   async authenticate(req: Request): Promise<void> {
-    // if (req.user) {
-    //   this.successCallback(req.user);
-    //   return;
-    // }
-
     try {
-      const authResult = await this.proxiedStrategy.authenticate(req.cookies);
-      console.log(authResult);
-
-      if (!authResult?.valid || !authResult?.sub) {
+      const authResult = await this.proxiedStrategy.authenticate(req);
+      if (!authResult) {
         this.fail();
         return;
       }
@@ -45,7 +38,7 @@ class StrategyProxy extends Strategy {
       }
 
       return this.successCallback(user);
-    } catch {
+    } catch (e) {
       this.fail();
     }
   }

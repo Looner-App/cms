@@ -13,10 +13,10 @@ export const serverClient = createClient({
 });
 
 export const serverClientAuth = createAuth({
-  domain: `http://localhost:3001`,
+  domain: `http://localhost:3000`,
   client: serverClient,
   adminAccount: privateKeyToAccount({
     client: serverClient,
-    privateKey: process.env.PAYLOAD_SECRET_KEY,
+    privateKey: `ede99aed9ee38e15d48acf771b299a6f8e98e3bd5864c9c24fcf0dfd3b8bb8dd`,
   }),
 });

@@ -33,7 +33,7 @@ export const Users: CollectionConfig = {
       path: `/register`,
     },
     {
-      path: `/auth/login`,
+      path: `/auth`,
       method: `get`,
       handler: endpointsv2.login,
     },
@@ -144,6 +144,14 @@ export const Users: CollectionConfig = {
       },
       admin: {
         hidden: true,
+      },
+    },
+    {
+      name: `sub`,
+      type: `text`,
+      label: `Sub`,
+      admin: {
+        readOnly: true,
       },
     },
     {

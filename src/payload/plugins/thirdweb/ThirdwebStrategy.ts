@@ -1,10 +1,13 @@
 import type { Request } from 'express';
 
+import Cookies from 'cookies';
+
 import { verifyJWT } from './endpoints';
 
 export class ThirdwebStrategy {
   async authenticate(req: Request) {
-    const jwt = req.cookies?.get(`jwt`);
+    const cookie = new Cookies(req, null);
+    const jwt = cookie.get(`jwt`);
     if (!jwt) return null;
 
     const result = await verifyJWT(jwt);
