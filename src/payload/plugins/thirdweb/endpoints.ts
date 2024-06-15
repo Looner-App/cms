@@ -1,8 +1,8 @@
 import type { Response } from 'express';
 import type { PayloadRequest } from 'payload/types';
 
-import ThirdwebStrategy from './ThirdwebStrategy';
 import { serverClientAuth } from './client';
+import { extractJWT, verifyJWT } from './utility';
 
 export const login = async (req: PayloadRequest, res: Response) => {
   const payload = await serverClientAuth.generatePayload({
@@ -27,12 +27,12 @@ export const auth = async (req: PayloadRequest, res: Response) => {
 };
 
 export const account = async (req: PayloadRequest, res: Response) => {
-  const jwt = ThirdwebStrategy.extractJWT(req);
+  const jwt = extractJWT(req);
   if (!jwt) {
     return res.sendStatus(401);
   }
 
-  const authResult = await ThirdwebStrategy.verifyJWT(serverClientAuth, { jwt });
+  const authResult = await verifyJWT(serverClientAuth, { jwt });
   if (!authResult) {
     return res.sendStatus(401);
   }

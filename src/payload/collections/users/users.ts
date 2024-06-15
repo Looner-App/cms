@@ -1,9 +1,9 @@
 import type { CollectionConfig } from 'payload/types';
 
 import { admins, adminsAndUser, anyone } from '../../access';
+import { ThirdwebStrategy } from '../../plugins/thirdweb/ThirdwebStrategy';
 import { serverClientAuth } from '../../plugins/thirdweb/client';
 import * as endpointsv2 from '../../plugins/thirdweb/endpoints';
-import { AuthStrategy } from '../../plugins/thirdweb/strategy';
 import { ensureFirstUserIsAdmin, loginAfterCreate } from './hooks';
 
 export const Users: CollectionConfig = {
@@ -43,9 +43,9 @@ export const Users: CollectionConfig = {
   auth: {
     strategies: [
       {
-        name: AuthStrategy.name,
+        name: ThirdwebStrategy.name,
         strategy: ctx => {
-          return new AuthStrategy(ctx, serverClientAuth);
+          return new ThirdwebStrategy(ctx, serverClientAuth);
         },
       },
     ],
@@ -109,6 +109,7 @@ export const Users: CollectionConfig = {
       name: `sub`,
       type: `text`,
       label: `Sub`,
+      unique: true,
       admin: {
         readOnly: true,
       },

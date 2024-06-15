@@ -1,40 +1,40 @@
 import type { Payload } from 'payload';
 import type { User } from 'payload/auth';
 
-import type { ServerClientAuth } from './client';
+import { Strategy } from 'passport';
 
-import { ThirdwebStrategy } from './ThirdwebStrategy';
-import { Role } from './utils/roles';
-import { saltHashGenerator } from './utils/saltHashPassword';
+import { Role } from './roles';
+import { createRandomPassword } from './utility';
 
-export class AuthStrategy extends ThirdwebStrategy {
+export class PayloadStrategy extends Strategy {
   ctx: Payload;
   slug: string;
 
-  constructor(ctx: Payload, client: ServerClientAuth) {
-    super(client);
+  constructor(ctx: Payload) {
+    super();
     this.ctx = ctx;
     this.slug = `users`;
   }
 
-  createPassword() {
-    return this.ctx.encrypt(crypto.randomUUID());
-  }
-
-  async createUser(sub: string, role: Role): Promise<User> {
-    const password = this.createPassword();
-
-    const { salt, hash } = await saltHashGenerator({ password });
+  private async createUser(sub: string, role: Role): Promise<User> {
+    const password = createRandomPassword(this.ctx);
+    ///todo: check if necessary
+    // const { salt, hash } = await saltHashGenerator({ password });
 
     const email = `${crypto.randomUUID()}@looner.io`;
-
     const newUser = await this.ctx.create({
+      ///todo: check if necessary
+
+      showHiddenFields: true,
       collection: `users`,
       data: {
+        name: `Looner`,
         email,
         password,
-        salt,
-        hash,
+        ///todo: check if necessary
+
+        // salt,
+        // hash,
         sub,
         roles: [role],
       },
@@ -43,9 +43,12 @@ export class AuthStrategy extends ThirdwebStrategy {
     return newUser as User;
   }
 
-  async findUser(payload: Payload, sub: string): Promise<User | null> {
+  private async findUser(payload: Payload, sub: string): Promise<User | null> {
     const users = await payload.find({
       collection: `users`,
+      ///todo: check if necessary
+
+      showHiddenFields: true,
       where: {
         sub: {
           equals: sub,
@@ -60,7 +63,7 @@ export class AuthStrategy extends ThirdwebStrategy {
     return null;
   }
 
-  login(user: User): void {
+  private login(user: User): void {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
     this.success(user);
