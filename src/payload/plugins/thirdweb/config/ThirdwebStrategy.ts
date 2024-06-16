@@ -2,8 +2,10 @@ import type { Request } from 'express';
 import type { Payload } from 'payload';
 import type { User } from 'payload/auth';
 
+import merge from 'lodash/merge';
 import { Strategy } from 'passport';
 
+import type { ThirdwebUser } from '../types';
 import type { ServerClientAuth } from './client';
 
 import { Role } from './roles';
@@ -40,6 +42,29 @@ export class ThirdwebStrategy extends Strategy {
     return newUser as User;
   }
 
+  private async findThirdwebUser(sub: string): Promise<ThirdwebUser[]> {
+    if (!sub) return [];
+
+    const url = new URL(
+      `https://embedded-wallet.thirdweb.com/api/2023-11-30/embedded-wallet/user-details`,
+    );
+    if (sub) {
+      url.searchParams.set(`queryBy`, `walletAddress`);
+      url.searchParams.set(`walletAddress`, sub);
+    }
+
+    const resp = await fetch(url.href, {
+      headers: {
+        Authorization: `Bearer ${`KCoWk3WxgLYZCvyGGaRW21B-ryMkTFXXnHJiQDB5Tfzy03mUdrs3IBHRcM_1yUMXJzT2gpGbynX3RpVNgobSMQ`}`,
+      },
+    });
+
+    const data = await resp.json();
+    console.log(`data`, data);
+
+    return data;
+  }
+
   private async findUser(payload: Payload, sub: string): Promise<User | null> {
     const users = await payload.find({
       showHiddenFields: true,
@@ -52,7 +77,9 @@ export class ThirdwebStrategy extends Strategy {
     });
 
     if (users.docs.length > 0) {
-      return users.docs[0] as User;
+      const thirdWebUser = await this.findThirdwebUser(sub);
+      const updatedUser = await this.mergeUser(users.docs[0] as User, thirdWebUser[0]);
+      return updatedUser;
     }
 
     return null;
@@ -62,6 +89,19 @@ export class ThirdwebStrategy extends Strategy {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
     this.success(user);
+  }
+
+  private async mergeUser(user: User, thirdwebUser: ThirdwebUser): Promise<User> {
+    const updatedUser = await this.ctx.update({
+      collection: this.slug,
+      id: user.id,
+      data: merge(user, {
+        createdAt: thirdwebUser.createdAt,
+        email: thirdwebUser.email,
+      }),
+    });
+
+    return updatedUser as User;
   }
 
   async authenticate(req: Request) {
