@@ -4,24 +4,22 @@ import { admins, adminsAndUser, anyone } from '../../access';
 import { ThirdwebStrategy } from '../../plugins/thirdweb/ThirdwebStrategy';
 import { serverClientAuth } from '../../plugins/thirdweb/client';
 import * as endpointsv2 from '../../plugins/thirdweb/endpoints';
-import { ensureFirstUserIsAdmin, loginAfterCreate } from './hooks';
+import { ensureFirstUserIsAdmin } from './hooks';
 
 export const Users: CollectionConfig = {
   slug: `users`,
   admin: {
     useAsTitle: `name`,
-    defaultColumns: [`name`, `email`, `roles`, `country`, `createdAt`, `updatedAt`],
+    defaultColumns: [`name`, `email`, `roles`, `createdAt`, `updatedAt`],
   },
   access: {
     read: anyone,
-    create: admins,
+    create: adminsAndUser,
     update: adminsAndUser,
-    delete: admins,
+    delete: () => false,
     admin: admins,
   },
-  hooks: {
-    afterChange: [loginAfterCreate],
-  },
+
   endpoints: [
     {
       path: `/auth`,
@@ -33,7 +31,6 @@ export const Users: CollectionConfig = {
       method: `post`,
       handler: endpointsv2.auth,
     },
-
     {
       path: `/auth/account`,
       method: `get`,
@@ -58,6 +55,7 @@ export const Users: CollectionConfig = {
       unique: true,
       access: {
         read: adminsAndUser,
+        update: adminsAndUser,
       },
     },
     {
