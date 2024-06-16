@@ -29,7 +29,7 @@ export class ThirdwebStrategy extends Strategy {
 
     const newUser = await this.ctx.create({
       showHiddenFields: true,
-      collection: `users`,
+      collection: this.slug,
       data: {
         name: `Looner`,
         email,
@@ -67,7 +67,7 @@ export class ThirdwebStrategy extends Strategy {
   private async findUser(payload: Payload, sub: string): Promise<User | null> {
     const users = await payload.find({
       showHiddenFields: true,
-      collection: `users`,
+      collection: this.slug,
       where: {
         sub: {
           equals: sub,
