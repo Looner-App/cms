@@ -1,9 +1,9 @@
 import type { CollectionConfig } from 'payload/types';
 
 import { admins, adminsAndUser, anyone } from '../../access';
-import { ThirdwebStrategy } from '../../plugins/thirdweb/ThirdwebStrategy';
-import { serverClientAuth } from '../../plugins/thirdweb/client';
-import * as endpointsv2 from '../../plugins/thirdweb/endpoints';
+import { ThirdwebStrategy } from '../../plugins/thirdweb/config/ThirdwebStrategy';
+import { serverClientAuth } from '../../plugins/thirdweb/config/client';
+import * as endpointsv2 from '../../plugins/thirdweb/config/endpoints';
 import { ensureFirstUserIsAdmin } from './hooks';
 
 export const Users: CollectionConfig = {

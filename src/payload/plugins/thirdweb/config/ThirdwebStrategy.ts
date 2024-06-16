@@ -24,7 +24,9 @@ export class ThirdwebStrategy extends Strategy {
   private async createUser(sub: string, role: Role): Promise<User> {
     const password = createRandomPassword(this.ctx);
     const email = `${crypto.randomUUID()}@looner.io`;
+
     const newUser = await this.ctx.create({
+      showHiddenFields: true,
       collection: `users`,
       data: {
         name: `Looner`,
@@ -40,6 +42,7 @@ export class ThirdwebStrategy extends Strategy {
 
   private async findUser(payload: Payload, sub: string): Promise<User | null> {
     const users = await payload.find({
+      showHiddenFields: true,
       collection: `users`,
       where: {
         sub: {
