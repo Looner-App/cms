@@ -8,17 +8,18 @@ export const createClient = (args: CreateThirdwebClientOptions) => {
   return createThirdwebClient(args);
 };
 
-export const serverClient = createClient({
-  secretKey: `KCoWk3WxgLYZCvyGGaRW21B-ryMkTFXXnHJiQDB5Tfzy03mUdrs3IBHRcM_1yUMXJzT2gpGbynX3RpVNgobSMQ`,
-});
+export const isServer = typeof window === `undefined`;
 
-export const serverClientAuth = createAuth({
-  domain: `http://localhost:3000`,
-  client: serverClient,
-  adminAccount: privateKeyToAccount({
-    client: serverClient,
-    privateKey: `ede99aed9ee38e15d48acf771b299a6f8e98e3bd5864c9c24fcf0dfd3b8bb8dd`,
-  }),
-});
+export const createClientAuth = (client: ServerClient, domain: string, privateKey: string) => {
+  return createAuth({
+    domain,
+    client,
+    adminAccount: privateKeyToAccount({
+      client,
+      privateKey,
+    }),
+  });
+};
 
 export type ServerClientAuth = ReturnType<typeof createAuth>;
+export type ServerClient = ReturnType<typeof createClient>;

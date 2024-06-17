@@ -27,7 +27,7 @@ import {
   Settings,
 } from './globals';
 import { slugHandler } from './modules/slug-handler';
-import { core, owlProtocol } from './plugins';
+import { core, owlProtocol, thirdweb } from './plugins';
 
 const generateTitle: GenerateTitle = () => {
   return process.env.PAYLOAD_PUBLIC_SITE_NAME || `Looner`;
@@ -227,5 +227,14 @@ export default buildConfig({
     }),
     owlProtocol(),
     core(),
+    thirdweb({
+      strategyOptions: {
+        clientId: process.env.PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID,
+        domain: process.env.PAYLOAD_PUBLIC_FRONTEND_URL,
+        privateKey: process.env.PAYLOAD_PUBLIC_THIRDWEB_WALLET_PRIVATE_KEY,
+        secretKey: process.env.THIRDWEB_SECRETE_KEY,
+        userDetailsUrl: process.env.THIRDWEB_WALLET_DETAILS_URL,
+      },
+    }),
   ],
 });

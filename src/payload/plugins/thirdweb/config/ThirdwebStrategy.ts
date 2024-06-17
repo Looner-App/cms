@@ -1,33 +1,63 @@
 import type { Request } from 'express';
 import type { Payload } from 'payload';
 import type { User } from 'payload/auth';
+import type { VerifyJWTParams } from 'thirdweb/dist/types/auth/core/verify-jwt';
+import type { JWTPayload } from 'thirdweb/dist/types/utils/jwt/types';
 
+import Cookies from 'cookies';
+import crypto from 'crypto';
 import merge from 'lodash/merge';
 import { Strategy } from 'passport';
 
 import type { ThirdwebUser } from '../types';
-import type { ServerClientAuth } from './client';
+import type { StrategyOptions } from '../types';
+import type { ServerClient, ServerClientAuth } from './client';
 
+import { createClient, createClientAuth, isServer } from './client';
 import { Role } from './roles';
-import { createRandomPassword } from './utility';
-import { getJWTPayload } from './utility';
 
 export class ThirdwebStrategy extends Strategy {
-  ctx: Payload;
+  opts: StrategyOptions;
+  payload: Payload;
+  serverClient: ServerClient;
   serverClientAuth: ServerClientAuth;
-  slug = `users`;
+  slug: string;
 
-  constructor(ctx: Payload, serverClientAuth: ServerClientAuth) {
+  constructor(payload: Payload, slug: string, opts: StrategyOptions) {
     super();
-    this.ctx = ctx;
-    this.serverClientAuth = serverClientAuth;
+
+    this.payload = payload;
+    this.opts = opts;
+    this.slug = slug;
+
+    /// todo: client and server version with functions getters
+    this.serverClient = createClient(
+      isServer
+        ? {
+            secretKey: this.opts.secretKey,
+          }
+        : {
+            clientId: this.opts.clientId,
+          },
+    );
+
+    this.serverClientAuth = createClientAuth(
+      this.serverClient,
+      this.opts.domain,
+      this.opts.privateKey, /// avoid it if client?
+    );
+  }
+
+  static extractJWT(req: Request) {
+    const cookie = new Cookies(req, null);
+    return cookie.get(`jwt`);
   }
 
   private async createUser(sub: string, role: Role): Promise<User> {
-    const password = createRandomPassword(this.ctx);
+    const password = this.createRandomPassword();
     const email = `${crypto.randomUUID()}@looner.io`;
 
-    const newUser = await this.ctx.create({
+    const newUser = await this.payload.create({
       showHiddenFields: true,
       collection: this.slug,
       data: {
@@ -42,29 +72,7 @@ export class ThirdwebStrategy extends Strategy {
     return newUser as User;
   }
 
-  private async findThirdwebUser(sub: string): Promise<ThirdwebUser[]> {
-    if (!sub) return [];
-
-    const url = new URL(
-      `https://embedded-wallet.thirdweb.com/api/2023-11-30/embedded-wallet/user-details`,
-    );
-    if (sub) {
-      url.searchParams.set(`queryBy`, `walletAddress`);
-      url.searchParams.set(`walletAddress`, sub);
-    }
-
-    const resp = await fetch(url.href, {
-      headers: {
-        Authorization: `Bearer ${`KCoWk3WxgLYZCvyGGaRW21B-ryMkTFXXnHJiQDB5Tfzy03mUdrs3IBHRcM_1yUMXJzT2gpGbynX3RpVNgobSMQ`}`,
-      },
-    });
-
-    const data = await resp.json();
-
-    return data;
-  }
-
-  private async findUser(payload: Payload, sub: string): Promise<User | null> {
+  private async findPayloadUser(payload: Payload, sub: string): Promise<User | null> {
     const users = await payload.find({
       showHiddenFields: true,
       collection: this.slug,
@@ -84,39 +92,52 @@ export class ThirdwebStrategy extends Strategy {
     return null;
   }
 
+  private async findThirdwebUser(sub: string): Promise<ThirdwebUser[]> {
+    try {
+      if (!sub) return [];
+
+      const url = new URL(this.opts.userDetailsUrl);
+      if (sub) {
+        url.searchParams.set(`queryBy`, `walletAddress`);
+        url.searchParams.set(`walletAddress`, sub);
+      }
+
+      const resp = await fetch(url.href, {
+        headers: {
+          Authorization: `Bearer ${this.opts.secretKey}}`,
+        },
+      });
+
+      const data = await resp.json();
+
+      return data;
+    } catch {
+      return [];
+    }
+  }
+
   private login(user: User): void {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
     this.success(user);
   }
 
-  private async mergeUser(user: User, thirdwebUser: ThirdwebUser): Promise<User> {
-    const updatedUser = await this.ctx.update({
+  private async mergeUser(user: User, thirdwebUser?: ThirdwebUser): Promise<User> {
+    const updatedUser = await this.payload.update({
       collection: this.slug,
       id: user.id,
       data: merge(user, {
-        createdAt: thirdwebUser.createdAt,
-        email: thirdwebUser.email,
+        createdAt: thirdwebUser?.createdAt || user.createdAt,
+        email: thirdwebUser?.email || user.email,
       }),
     });
 
     return updatedUser as User;
   }
 
-  async authenticate(req: Request) {
-    const authResult = await getJWTPayload(req, this.serverClientAuth);
-
-    if (!authResult) {
-      this.fail();
-      return;
-    }
-
-    this.signIn(authResult.sub);
-  }
-
-  async signIn(sub: string): Promise<void> {
+  private async signIn(sub: string): Promise<void> {
     try {
-      const user = await this.findUser(this.ctx, sub);
+      const user = await this.findPayloadUser(this.payload, sub);
 
       if (!user) {
         const newUser = await this.createUser(sub, Role.User);
@@ -128,6 +149,40 @@ export class ThirdwebStrategy extends Strategy {
     } catch (e) {
       this.fail();
     }
+  }
+
+  async authenticate(req: Request) {
+    const authResult = await this.getJWTPayload(req);
+
+    if (!authResult) {
+      this.fail();
+      return;
+    }
+
+    this.signIn(authResult.sub);
+  }
+
+  createRandomPassword() {
+    return this.payload.encrypt(crypto.randomUUID());
+  }
+
+  async getJWTPayload(req: Request) {
+    const jwt = ThirdwebStrategy.extractJWT(req);
+    if (!jwt) return null;
+
+    const result = await this.verifyJWT({ jwt });
+    if (!result.sub) return null;
+
+    return result;
+  }
+
+  async verifyJWT(params: VerifyJWTParams): Promise<JWTPayload> {
+    const result = await this.serverClientAuth.verifyJWT(params);
+    return result.valid
+      ? {
+          ...result.parsedJWT,
+        }
+      : null;
   }
 }
 

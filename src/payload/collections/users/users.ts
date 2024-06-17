@@ -1,9 +1,6 @@
 import type { CollectionConfig } from 'payload/types';
 
 import { admins, adminsAndUser, anyone } from '../../access';
-import { ThirdwebStrategy } from '../../plugins/thirdweb/config/ThirdwebStrategy';
-import { serverClientAuth } from '../../plugins/thirdweb/config/client';
-import * as endpointsv2 from '../../plugins/thirdweb/config/endpoints';
 import { ensureFirstUserIsAdmin } from './hooks';
 
 export const Users: CollectionConfig = {
@@ -20,33 +17,6 @@ export const Users: CollectionConfig = {
     admin: admins,
   },
 
-  endpoints: [
-    {
-      path: `/auth`,
-      method: `get`,
-      handler: endpointsv2.login,
-    },
-    {
-      path: `/auth`,
-      method: `post`,
-      handler: endpointsv2.auth,
-    },
-    {
-      path: `/auth/account`,
-      method: `get`,
-      handler: endpointsv2.account,
-    },
-  ],
-  auth: {
-    strategies: [
-      {
-        name: ThirdwebStrategy.name,
-        strategy: ctx => {
-          return new ThirdwebStrategy(ctx, serverClientAuth);
-        },
-      },
-    ],
-  },
   fields: [
     {
       name: `email`,
@@ -103,15 +73,7 @@ export const Users: CollectionConfig = {
         hidden: true,
       },
     },
-    {
-      name: `sub`,
-      type: `text`,
-      label: `Sub`,
-      unique: true,
-      admin: {
-        readOnly: true,
-      },
-    },
+
     {
       name: `updatedAt`,
       type: `date`,
