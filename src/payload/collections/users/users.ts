@@ -19,16 +19,6 @@ export const Users: CollectionConfig = {
 
   fields: [
     {
-      name: `email`,
-      type: `email`,
-      required: true,
-      unique: true,
-      access: {
-        read: adminsAndUser,
-        update: adminsAndUser,
-      },
-    },
-    {
       name: `name`,
       type: `text`,
     },

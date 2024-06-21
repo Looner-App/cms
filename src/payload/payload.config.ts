@@ -27,7 +27,7 @@ import {
   Settings,
 } from './globals';
 import { slugHandler } from './modules/slug-handler';
-import { core, owlProtocol, thirdweb } from './plugins';
+import { core, thirdweb } from './plugins';
 
 const generateTitle: GenerateTitle = () => {
   return process.env.PAYLOAD_PUBLIC_SITE_NAME || `Looner`;
@@ -128,6 +128,7 @@ export default buildConfig({
         },
       }
     : undefined,
+  /// Todo: move to core
   endpoints: [
     {
       path: `/custom/:collections/get-slugs`,
@@ -170,15 +171,14 @@ export default buildConfig({
     Items,
     Categories,
     Pages,
-    // Blogs,
     Media,
     Users,
   ],
   globals: [
-    // ArchiveBlog,
+    /// Todo: move to core
+
     Settings,
     Header,
-    // Footer,
   ],
   localization: {
     defaultLocale: getLocaleDefault(),
@@ -201,31 +201,19 @@ export default buildConfig({
   },
   plugins: [
     redirects({
-      collections: [
-        `pages`,
-        // `blogs`
-      ],
+      collections: [`pages`],
     }),
     nestedDocs({
-      collections: [
-        // `categories`
-      ],
+      collections: [],
     }),
     seo({
-      collections: [
-        `pages`,
-        // `blogs`
-      ],
+      collections: [`pages`],
       generateTitle,
       uploadsCollection: `media`,
     }),
     slugHandler({
-      collections: [
-        `pages`,
-        // `blogs`
-      ],
+      collections: [`pages`],
     }),
-    owlProtocol(),
     core(),
     thirdweb({
       strategyOptions: {

@@ -9,8 +9,6 @@ import type { Config as ThirdwebConfig } from '../types';
 
 import ThirdwebStrategy from '../config/ThirdwebStrategy';
 import { isServer } from '../config/client';
-import { Provider } from '../config/components/Provider';
-import SignInButton from '../config/components/SignInButton';
 import { endpoints } from '../endpoints/users';
 import { fields } from '../fields/users';
 import { strategies } from '../strategies/users';
@@ -23,12 +21,13 @@ export type CollectiosParams = {
 export const collections = ({ payloadConfig, thirdwebConfig }: CollectiosParams): PayloadConfig => {
   payloadConfig.collections = map(payloadConfig.collections, (collection: CollectionConfig) => {
     if (collection.slug === `users`) {
-      /**
-       * Authentication injection
-       *
-       * inject the thrdweb strategy and endpoints
-       */
       if (isServer) {
+        /**
+         * Authentication injection
+         *
+         * inject the thrdweb strategy and endpoints
+         */
+
         const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
 
         if (typeof collection.auth === `boolean`) {
@@ -50,26 +49,11 @@ export const collections = ({ payloadConfig, thirdwebConfig }: CollectiosParams)
           endpoints: collection.endpoints as Endpoint[],
           strategy,
         });
-
-        collection.fields = fields({
-          fields: collection.fields,
-        });
-      } else {
-        /**
-         * Client side
-         *
-         * Inject components
-         */
-
-        payloadConfig.admin = {
-          ...payloadConfig.admin,
-          components: {
-            ...payloadConfig.admin.components,
-            providers: [...payloadConfig.admin.components.providers, Provider],
-            afterLogin: [...payloadConfig.admin.components.afterLogin, SignInButton],
-          },
-        };
       }
+
+      collection.fields = fields({
+        fields: collection.fields,
+      });
     }
 
     return collection;
