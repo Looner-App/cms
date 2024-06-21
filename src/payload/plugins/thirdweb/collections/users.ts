@@ -13,12 +13,15 @@ import { endpoints } from '../endpoints/users';
 import { fields } from '../fields/users';
 import { strategies } from '../strategies/users';
 
-export type CollectiosParams = {
+export type CollectionsParams = {
   payloadConfig: PayloadConfig;
   thirdwebConfig: ThirdwebConfig;
 };
 
-export const collections = ({ payloadConfig, thirdwebConfig }: CollectiosParams): PayloadConfig => {
+export const collections = ({
+  payloadConfig,
+  thirdwebConfig,
+}: CollectionsParams): PayloadConfig => {
   payloadConfig.collections = map(payloadConfig.collections, (collection: CollectionConfig) => {
     if (collection.slug === `users`) {
       if (isServer) {

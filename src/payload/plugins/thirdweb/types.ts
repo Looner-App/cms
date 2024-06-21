@@ -17,3 +17,8 @@ export type StrategyOptions = {
 export type Config = {
   strategyOptions: StrategyOptions;
 };
+
+export enum DeployCollectionContext {
+  Categories,
+  DeployCollection,
+}

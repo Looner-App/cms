@@ -10,22 +10,10 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { buildConfig } from 'payload/config';
 
-import {
-  // Blogs,
-  Categories,
-  Items,
-  Media,
-  Pages,
-  Users,
-} from './collections';
+import { Categories, Items, Media, Pages, Users } from './collections';
 import { NoRobots } from './components/no-robots';
 import { claimItem, getItem, getSlugs } from './endpoints';
-import {
-  // ArchiveBlog,
-  // Footer,
-  Header,
-  Settings,
-} from './globals';
+import { Header, Settings } from './globals';
 import { slugHandler } from './modules/slug-handler';
 import { core, thirdweb } from './plugins';
 
@@ -176,7 +164,6 @@ export default buildConfig({
   ],
   globals: [
     /// Todo: move to core
-
     Settings,
     Header,
   ],

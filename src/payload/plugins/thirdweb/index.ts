@@ -7,12 +7,13 @@ import type { Config as ThirdwebConfig } from './types';
 import { collections } from './collections';
 // import { Provider } from './config/components/Provider';
 // import SignInButton from './config/components/SignInButton';
+
 export const thirdweb = (thirdwebConfig: ThirdwebConfig) => {
   return flow(
     (payloadConfig: PayloadConfig) => merge({}, payloadConfig), /// shallow copy
     (payloadConfig: PayloadConfig) =>
       reduce(
-        [`users`],
+        [`users`, `deployCollection`],
         (config, kind) => ({
           ...config,
           ...collections[kind]({
