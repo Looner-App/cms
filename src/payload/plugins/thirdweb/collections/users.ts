@@ -8,6 +8,9 @@ import payload from 'payload';
 import type { Config as ThirdwebConfig } from '../types';
 
 import ThirdwebStrategy from '../config/ThirdwebStrategy';
+import { isServer } from '../config/client';
+import { Provider } from '../config/components/Provider';
+import SignInButton from '../config/components/SignInButton';
 import { endpoints } from '../endpoints/users';
 import { fields } from '../fields/users';
 import { strategies } from '../strategies/users';
@@ -20,31 +23,53 @@ export type CollectiosParams = {
 export const collections = ({ payloadConfig, thirdwebConfig }: CollectiosParams): PayloadConfig => {
   payloadConfig.collections = map(payloadConfig.collections, (collection: CollectionConfig) => {
     if (collection.slug === `users`) {
-      const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
+      /**
+       * Authentication injection
+       *
+       * inject the thrdweb strategy and endpoints
+       */
+      if (isServer) {
+        const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
 
-      if (typeof collection.auth === `boolean`) {
-        throw new Error(`Collection ${collection.slug} is missing auth configuration`);
-      }
+        if (typeof collection.auth === `boolean`) {
+          throw new Error(
+            `Collection ${collection.slug} set as boolean for auth, must be an object or empty to enable strategies injection`,
+          );
+        }
 
-      if (isEmpty(collection.auth)) {
-        collection.auth = {
-          strategies: [],
+        if (isEmpty(collection.auth)) {
+          collection.auth = {};
+        }
+
+        collection.auth.strategies = strategies({
+          strategies: collection.auth.strategies,
+          strategy,
+        });
+
+        collection.endpoints = endpoints({
+          endpoints: collection.endpoints as Endpoint[],
+          strategy,
+        });
+
+        collection.fields = fields({
+          fields: collection.fields,
+        });
+      } else {
+        /**
+         * Client side
+         *
+         * Inject components
+         */
+
+        payloadConfig.admin = {
+          ...payloadConfig.admin,
+          components: {
+            ...payloadConfig.admin.components,
+            providers: [...payloadConfig.admin.components.providers, Provider],
+            afterLogin: [...payloadConfig.admin.components.afterLogin, SignInButton],
+          },
         };
       }
-
-      collection.auth.strategies = strategies({
-        strategies: collection.auth.strategies,
-        strategy,
-      });
-
-      collection.endpoints = endpoints({
-        endpoints: collection.endpoints as Endpoint[],
-        strategy,
-      });
-
-      collection.fields = fields({
-        fields: collection.fields,
-      });
     }
 
     return collection;

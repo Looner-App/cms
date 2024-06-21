@@ -231,7 +231,7 @@ export default buildConfig({
       strategyOptions: {
         clientId: process.env.PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID,
         domain: process.env.PAYLOAD_PUBLIC_FRONTEND_URL,
-        privateKey: process.env.PAYLOAD_PUBLIC_THIRDWEB_WALLET_PRIVATE_KEY,
+        privateKey: process.env.THIRDWEB_WALLET_PRIVATE_KEY,
         secretKey: process.env.THIRDWEB_SECRETE_KEY,
         userDetailsUrl: process.env.THIRDWEB_WALLET_DETAILS_URL,
       },

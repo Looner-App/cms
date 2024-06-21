@@ -16,6 +16,10 @@ export const strategies = ({
     {
       name: ThirdwebStrategy.name,
       strategy: ctx => {
+        /**
+         * Todo:
+         * Strategy already has payload instance, we should keep the current context instance to avoid missleading data?
+         */
         strategy.payload = ctx;
         return strategy;
       },

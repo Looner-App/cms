@@ -1,1 +1,5 @@
-export * as users from './users';
+import { fields as users } from './users';
+
+export const fields = {
+  users,
+};

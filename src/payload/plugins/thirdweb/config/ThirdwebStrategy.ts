@@ -13,7 +13,7 @@ import type { ThirdwebUser } from '../types';
 import type { StrategyOptions } from '../types';
 import type { ServerClient, ServerClientAuth } from './client';
 
-import { createClient, createClientAuth, isServer } from './client';
+import { createClient, createClientAuth } from './client';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
@@ -30,21 +30,14 @@ export class ThirdwebStrategy extends Strategy {
     this.opts = opts;
     this.slug = slug;
 
-    /// todo: client and server version with functions getters
-    this.serverClient = createClient(
-      isServer
-        ? {
-            secretKey: this.opts.secretKey,
-          }
-        : {
-            clientId: this.opts.clientId,
-          },
-    );
+    this.serverClient = createClient({
+      secretKey: this.opts.secretKey,
+    });
 
     this.serverClientAuth = createClientAuth(
       this.serverClient,
       this.opts.domain,
-      this.opts.privateKey, /// avoid it if client?
+      this.opts.privateKey,
     );
   }
 
