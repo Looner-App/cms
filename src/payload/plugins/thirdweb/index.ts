@@ -13,7 +13,7 @@ export const thirdweb = (thirdwebConfig: ThirdwebConfig) => {
     (payloadConfig: PayloadConfig) => merge({}, payloadConfig), /// shallow copy
     (payloadConfig: PayloadConfig) =>
       reduce(
-        [`users`, `deployCollection`],
+        [`users`, `deployCollection`, `mintCollection`],
         (config, kind) => ({
           ...config,
           ...collections[kind]({

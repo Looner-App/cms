@@ -22,3 +22,8 @@ export enum DeployCollectionContext {
   Categories,
   DeployCollection,
 }
+
+export enum MintsContext {
+  Items,
+  Mints,
+}
