@@ -9,9 +9,10 @@ export type { Chain };
 export const mainnets = [baseChain];
 export const testnets = [baseSepoliaChain];
 
-export const allowedChains = (
-  process.env.NEXT_PUBLIC_TESTNET_MODE === `1` ? testnets : mainnets
-) as [Chain, ...Chain[]];
+export const allowedChains = (process.env.TESTNET_MODE === `1` ? testnets : mainnets) as [
+  Chain,
+  ...Chain[],
+];
 
 export const allowedChainsConfig = reduce(
   allowedChains,

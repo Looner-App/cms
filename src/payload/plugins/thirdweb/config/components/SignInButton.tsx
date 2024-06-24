@@ -71,7 +71,6 @@ export const SignInButton = () => {
                 {
                   name: chain.blockExplorers.default.name,
                   url: chain.blockExplorers.default.url,
-                  apiUrl: chain.blockExplorers.default.apiUrl!,
                 },
               ]
             : [],

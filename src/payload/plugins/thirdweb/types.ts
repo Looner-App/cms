@@ -1,3 +1,7 @@
+import type { Payload } from 'payload';
+
+import type { Chain } from './config/types';
+
 export type ThirdwebUser = {
   createdAt: string;
   email?: string;
@@ -27,3 +31,14 @@ export enum MintsContext {
   Items,
   Mints,
 }
+
+export type DeployCollectionResponse = {
+  deployedAddress: string;
+};
+
+export type DeployCollectionParams = {
+  chainId: Chain['id'];
+  name: string;
+  payload: Payload;
+  symbol: string;
+};
