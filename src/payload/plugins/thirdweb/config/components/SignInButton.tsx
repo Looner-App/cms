@@ -24,7 +24,6 @@ export const SignInButton = () => {
           },
 
           doLogin: async params => {
-            // const { data } =
             await fetch(`/api/users/auth`, {
               method: `POST`,
               headers: {
@@ -32,13 +31,6 @@ export const SignInButton = () => {
               },
               body: JSON.stringify(params),
             }).then(res => res.json());
-
-            // if (data.token) {
-            //   setTimeout(() => {
-            //     router.push(`/account`);
-            //     router.refresh();
-            //   }, 500);
-            // }
           },
 
           isLoggedIn: async () => {
@@ -53,11 +45,6 @@ export const SignInButton = () => {
             await fetch(`/api/users/auth/logout`, {
               method: `POST`,
             }).then(res => res.json());
-
-            // setTimeout(() => {
-            //   router.push(`/`);
-            //   router.refresh();
-            // }, 500);
           },
         }}
         chains={allowedChains.map(chain => ({
