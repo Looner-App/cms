@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload/types';
 
 import type { DeployCollection } from '../../../payload-types';
 
+import { mainnets, testnets } from '../config/config';
 import { DeployCollectionContext } from '../types';
 import { webhook } from '../webhook';
 
@@ -30,7 +31,7 @@ export const hooks = ({ hooks, context }: HooksParams): CollectionConfig['hooks'
               payload: req.payload,
               name,
               /// todo: get it from global config and also provide a way to receive it from api calls
-              chainId: 84532,
+              chainId: process.env.TESTNET_MODE === `1` ? testnets[0].id : mainnets[0].id,
               symbol,
             });
 

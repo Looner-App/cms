@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload/types';
 
 import { APIError } from 'payload/errors';
 
+import { mainnets, testnets } from '../config/config';
 import { MintsContext } from '../types';
 import { webhook } from '../webhook';
 
@@ -133,7 +134,7 @@ export const hooks = ({ hooks, context }: HooksParams): CollectionConfig['hooks'
                 collectionAddress,
                 payload: req.payload,
                 to: doc.claimedBy.sub,
-                chainId: 84532,
+                chainId: process.env.TESTNET_MODE === `1` ? testnets[0].id : mainnets[0].id,
                 name: doc.name,
                 description: doc.description,
               });
