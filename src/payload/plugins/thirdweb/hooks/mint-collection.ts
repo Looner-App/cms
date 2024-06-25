@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload/types';
 import { APIError } from 'payload/errors';
 
 import { MintsContext } from '../types';
+import { webhook } from '../webhook';
 
 export type HooksParams = {
   context: MintsContext;
@@ -108,7 +109,7 @@ export const hooks = ({ hooks, context }: HooksParams): CollectionConfig['hooks'
               if (mint.docs.length >= 1) return result;
 
               /// skip if use dont have address
-              if (!doc.claimedBy?.address) return result;
+              if (!doc.claimedBy?.sub) return result;
 
               const { deployedCollection } = doc.category;
 
@@ -128,23 +129,18 @@ export const hooks = ({ hooks, context }: HooksParams): CollectionConfig['hooks'
               /// if skip if collection address is not available
               if (!collectionAddress) return result;
 
-              // const data = await webhook.mintCollection({
-              //   payload: req.payload,
-              //   collectionAddress,
-              //   to: doc.claimedBy.address,
-              // });
-              const data = {
-                tokens: [
-                  {
-                    tokenId: crypto.randomUUID(),
-                  },
-                ],
-              };
+              await webhook.mintCollection({
+                collectionAddress,
+                payload: req.payload,
+                to: doc.claimedBy.sub,
+                chainId: 84532,
+                name: doc.name,
+                description: doc.description,
+              });
 
               const updatedMint = await req.payload.create({
                 collection: `mints`,
                 data: {
-                  tokenId: data.tokens[0].tokenId,
                   user: doc.claimedBy.id,
                   category: doc.category.id,
                   claimable: doc.id,

@@ -6,4 +6,7 @@ export const collections = {
   users,
   deployCollection,
   mintCollection,
+  //// todo: missing collections
+  /// queueIds
+  /// backend wallets
 };

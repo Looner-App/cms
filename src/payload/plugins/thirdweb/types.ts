@@ -42,3 +42,15 @@ export type DeployCollectionParams = {
   payload: Payload;
   symbol: string;
 };
+
+export type MintCollectioParams = {
+  chainId: Chain['id'];
+  collectionAddress: string;
+  description: string;
+  name: string;
+  payload: Payload;
+  to: string;
+};
+export type MintCollectionResponse = {
+  /// something here
+};

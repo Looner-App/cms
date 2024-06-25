@@ -1,14 +1,16 @@
-import type { DeployCollectionParams, DeployCollectionResponse } from '../types';
+import type { MintCollectioParams, MintCollectionResponse } from '../types';
 
 export const webhook = async ({
   // payload,
-  chainId,
+  collectionAddress,
+  to,
   name,
-  symbol,
-}: DeployCollectionParams): Promise<DeployCollectionResponse> => {
+  description,
+  chainId,
+}: MintCollectioParams): Promise<MintCollectionResponse> => {
   /// call thirdweb engine to deploy a contract
   const result = await fetch(
-    `${process.env.THIRDWEB_ENGINE_URL}/deploy/${chainId}/prebuilts/nft-collection`,
+    `${process.env.THIRDWEB_ENGINE_URL}/contract/${chainId}/${collectionAddress}/erc721/mint-to`,
     {
       method: `POST`,
       headers: {
@@ -18,9 +20,13 @@ export const webhook = async ({
         'x-backend-wallet-address': process.env.THIRDWEB_BACKEND_WALLET,
       },
       body: JSON.stringify({
-        contractMetadata: {
+        receiver: to,
+        metadata: {
           name,
-          symbol,
+          description,
+        },
+        metadataWithSupply: {
+          supply: `1`,
         },
       }),
     },

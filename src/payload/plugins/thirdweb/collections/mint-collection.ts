@@ -27,9 +27,9 @@ export const collections = ({ payloadConfig }: CollectionsParams): PayloadConfig
         interface: `Mint`,
       },
       admin: {
-        useAsTitle: `title`,
+        useAsTitle: `user`,
         group: `Thirdweb`,
-        defaultColumns: [`title`, `tokenId`, `user.name`, `category.name`],
+        defaultColumns: [`user`, `category`],
       },
       access: {
         read: anyone,

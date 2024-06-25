@@ -2,7 +2,6 @@ import type { CollectionConfig } from 'payload/types';
 
 import type { DeployCollection } from '../../../payload-types';
 
-// import { allowedChains } from '../config/config';
 import { DeployCollectionContext } from '../types';
 import { webhook } from '../webhook';
 
