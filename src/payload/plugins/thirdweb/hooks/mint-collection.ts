@@ -134,6 +134,7 @@ export const hooks = ({ hooks, context }: HooksParams): CollectionConfig['hooks'
                 collectionAddress,
                 payload: req.payload,
                 to: doc.claimedBy.sub,
+                /// todo: get it from global config and also provide a way to receive it from api calls
                 chainId: process.env.TESTNET_MODE === `1` ? testnets[0].id : mainnets[0].id,
                 name: doc.name,
                 description: doc.description,
