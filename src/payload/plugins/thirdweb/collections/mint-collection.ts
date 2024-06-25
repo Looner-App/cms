@@ -4,6 +4,7 @@ import map from 'lodash/map';
 
 import type { Config as ThirdwebConfig } from '../types';
 
+/// @todo: move to core
 import { anyone } from '../../../access';
 import { fields } from '../fields';
 import { hooks } from '../hooks';

@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload/types';
 
-/// @todo: move to core
 import { MintsContext } from '../types';
 
 export type FieldsParams = {
