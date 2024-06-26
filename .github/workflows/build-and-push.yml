@@ -38,6 +38,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      - name: 'Create .env file'
+        run: |
+          touch .env
+          echo THIRDWEB_SECRET_KEY=${{ secrets.THIRDWEB_SECRET_KEY }} >> .env
+          echo PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID=${{ secrets.PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID }} >> .env
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
