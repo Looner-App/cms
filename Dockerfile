@@ -1,5 +1,5 @@
 # BASE IMAGE
-FROM node:18.12-alpine as base
+FROM node:18.18-alpine as base
 WORKDIR /app
 RUN apk add ffmpeg
 RUN npm install -g yarn cross-env --force
