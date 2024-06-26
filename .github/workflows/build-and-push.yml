@@ -43,7 +43,7 @@ jobs:
           touch .env
           echo THIRDWEB_SECRET_KEY=${{ secrets.THIRDWEB_SECRET_KEY }} >> .env
           echo PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID=${{ secrets.PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID }} >> .env
-
+          echo THIRDWEB_WALLET_PRIVATE_KEY=${{ secrets.THIRDWEB_WALLET_PRIVATE_KEY }} >> .env
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
