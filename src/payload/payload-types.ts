@@ -87,6 +87,9 @@ export interface DeployCollection {
     symbol: string;
     collectionAddress?: string | null;
   };
+  settings: {
+    maxMintPerUser: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -161,10 +164,9 @@ export interface Media {
 export interface User {
   id: string;
   name?: string | null;
-  instagram?: string | null;
-  country?: string | null;
   roles?: ('admin' | 'user')[] | null;
   createdAt: string;
+  sub?: string | null;
   updatedAt: string;
   address?: string | null;
   referralCode?: string | null;
@@ -436,6 +438,7 @@ export interface Settings {
     tiktok?: string | null;
     twitter?: string | null;
     youtube?: string | null;
+    telegram?: string | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;

@@ -10,24 +10,12 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { buildConfig } from 'payload/config';
 
-import {
-  // Blogs,
-  Categories,
-  Items,
-  Media,
-  Pages,
-  Users,
-} from './collections';
+import { Categories, Items, Media, Pages, Users } from './collections';
 import { NoRobots } from './components/no-robots';
 import { claimItem, getItem, getSlugs } from './endpoints';
-import {
-  // ArchiveBlog,
-  // Footer,
-  Header,
-  Settings,
-} from './globals';
+import { Header, Settings } from './globals';
 import { slugHandler } from './modules/slug-handler';
-import { core, owlProtocol } from './plugins';
+import { core, thirdweb } from './plugins';
 
 const generateTitle: GenerateTitle = () => {
   return process.env.PAYLOAD_PUBLIC_SITE_NAME || `Looner`;
@@ -128,6 +116,7 @@ export default buildConfig({
         },
       }
     : undefined,
+  /// Todo: move to core
   endpoints: [
     {
       path: `/custom/:collections/get-slugs`,
@@ -170,15 +159,13 @@ export default buildConfig({
     Items,
     Categories,
     Pages,
-    // Blogs,
     Media,
     Users,
   ],
   globals: [
-    // ArchiveBlog,
+    /// Todo: move to core
     Settings,
     Header,
-    // Footer,
   ],
   localization: {
     defaultLocale: getLocaleDefault(),
@@ -201,31 +188,28 @@ export default buildConfig({
   },
   plugins: [
     redirects({
-      collections: [
-        `pages`,
-        // `blogs`
-      ],
+      collections: [`pages`],
     }),
     nestedDocs({
-      collections: [
-        // `categories`
-      ],
+      collections: [],
     }),
     seo({
-      collections: [
-        `pages`,
-        // `blogs`
-      ],
+      collections: [`pages`],
       generateTitle,
       uploadsCollection: `media`,
     }),
     slugHandler({
-      collections: [
-        `pages`,
-        // `blogs`
-      ],
+      collections: [`pages`],
     }),
-    owlProtocol(),
     core(),
+    thirdweb({
+      strategyOptions: {
+        clientId: process.env.PAYLOAD_PUBLIC_THIRDWEB_CLIENT_ID,
+        domain: process.env.PAYLOAD_PUBLIC_FRONTEND_URL,
+        privateKey: process.env.THIRDWEB_WALLET_PRIVATE_KEY,
+        secretKey: process.env.THIRDWEB_SECRET_KEY,
+        userDetailsUrl: process.env.THIRDWEB_WALLET_DETAILS_URL,
+      },
+    }),
   ],
 });

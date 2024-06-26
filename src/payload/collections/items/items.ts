@@ -47,7 +47,7 @@ export const Items: CollectionConfig = {
           });
 
           /// create upcoming items as batch
-          for (let i = 0; i < Number(result.batchCreationCount); i++) {
+          for (let i = 1; i < Number(result.batchCreationCount); i++) {
             const lng = result.location[0];
             const lat = result.location[1];
 
