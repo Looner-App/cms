@@ -147,7 +147,7 @@ export class ThirdwebStrategy extends Strategy {
   async authenticate(req: Request) {
     const authResult = await this.getJWTPayload(req);
 
-    if (!authResult) {
+    if (!authResult && authResult.sub) {
       this.fail();
       return;
     }
@@ -164,7 +164,7 @@ export class ThirdwebStrategy extends Strategy {
     if (!jwt) return null;
 
     const result = await this.verifyJWT({ jwt });
-    if (!result.sub) return null;
+    if (!result?.sub) return null;
 
     return result;
   }

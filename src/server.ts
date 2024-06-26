@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
+// globalThis.crypto ??= require(`node:crypto`).webcrypto;
+
 // This file is used to replace `server.ts` when ejecting i.e. `yarn eject`
 // See `../eject.ts` for exact details on how this file is used
 // See `./README.md#eject` for more information
