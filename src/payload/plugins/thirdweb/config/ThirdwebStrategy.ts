@@ -147,7 +147,7 @@ export class ThirdwebStrategy extends Strategy {
   async authenticate(req: Request) {
     const authResult = await this.getJWTPayload(req);
 
-    if (!authResult && authResult.sub) {
+    if (!authResult || !authResult?.sub) {
       this.fail();
       return;
     }
