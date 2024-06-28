@@ -29,8 +29,6 @@ export const slugHandler =
           const { slug } = collection;
           const isEnabled = pluginConfig?.collections?.includes(slug);
 
-          // console.log(collection);
-
           if (isEnabled) {
             return {
               ...collection,

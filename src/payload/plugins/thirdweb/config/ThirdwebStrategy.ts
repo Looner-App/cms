@@ -96,15 +96,15 @@ export class ThirdwebStrategy extends Strategy {
         url.searchParams.set(`walletAddress`, sub);
       }
 
-      const resp = await fetch(url.href, {
-        headers: {
-          Authorization: `Bearer ${this.opts.secretKey}}`,
-        },
+      const headers = new Headers();
+      headers.append(`Authorization`, `Bearer ${this.opts.secretKey}`);
+
+      const resp = await fetch(url, {
+        method: `GET`,
+        headers,
       });
 
       const data = await resp.json();
-      // eslint-disable-next-line no-console
-      console.log(`TWEB user data`, data);
 
       return data;
     } catch {
