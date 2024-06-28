@@ -17,6 +17,7 @@ import { createClient, createClientAuth } from './client';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
+  name = `thirdweb`;
   opts: StrategyOptions;
   payload: Payload;
   serverClient: ServerClient;
@@ -102,6 +103,8 @@ export class ThirdwebStrategy extends Strategy {
       });
 
       const data = await resp.json();
+      // eslint-disable-next-line no-console
+      console.log(`TWEB user data`, data);
 
       return data;
     } catch {

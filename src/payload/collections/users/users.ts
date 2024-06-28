@@ -16,11 +16,14 @@ export const Users: CollectionConfig = {
     delete: () => false,
     admin: admins,
   },
-
   fields: [
     {
       name: `name`,
       type: `text`,
+    },
+    {
+      name: `email`,
+      type: `email`,
     },
     {
       name: `roles`,
