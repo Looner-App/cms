@@ -18,6 +18,11 @@ export type StrategyOptions = {
   userDetailsUrl: string;
 };
 
+export enum StrategyContext {
+  Admin,
+  Client,
+}
+
 export type Config = {
   strategyOptions: StrategyOptions;
 };

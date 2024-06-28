@@ -5,13 +5,12 @@ import { isEmpty } from 'lodash';
 import map from 'lodash/map';
 import payload from 'payload';
 
-import type { Config as ThirdwebConfig } from '../types';
-
 import ThirdwebStrategy from '../config/ThirdwebStrategy';
 import { isServer } from '../config/client';
 import { endpoints } from '../endpoints/users';
 import { fields } from '../fields/users';
 import { strategies } from '../strategies/users';
+import { StrategyContext, type Config as ThirdwebConfig } from '../types';
 
 export type CollectionsParams = {
   payloadConfig: PayloadConfig;
@@ -33,6 +32,11 @@ export const collections = ({
 
         const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
 
+        const strategyAdmin = new ThirdwebStrategy(payload, `users`, {
+          ...thirdwebConfig.strategyOptions,
+          domain: process.env.PAYLOAD_PUBLIC_SERVER_URL,
+        });
+
         if (typeof collection.auth === `boolean`) {
           throw new Error(
             `Collection ${collection.slug} set as boolean for auth, must be an object or empty to enable strategies injection`,
@@ -43,6 +47,8 @@ export const collections = ({
           collection.auth = {};
         }
 
+        /// user
+
         collection.auth.strategies = strategies({
           strategies: collection.auth.strategies,
           strategy,
@@ -50,7 +56,21 @@ export const collections = ({
 
         collection.endpoints = endpoints({
           endpoints: collection.endpoints as Endpoint[],
+          context: StrategyContext.Client,
           strategy,
+        });
+
+        /// admin
+
+        collection.auth.strategies = strategies({
+          strategies: collection.auth.strategies,
+          strategy: strategyAdmin,
+        });
+
+        collection.endpoints = endpoints({
+          endpoints: collection.endpoints as Endpoint[],
+          context: StrategyContext.Admin,
+          strategy: strategyAdmin,
         });
       }
 

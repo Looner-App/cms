@@ -109,7 +109,8 @@ export class ThirdwebStrategy extends Strategy {
       console.log(`thirdweb user`, data);
 
       return data;
-    } catch {
+    } catch (e) {
+      this.payload.logger.error(e);
       return [];
     }
   }
@@ -156,6 +157,8 @@ export class ThirdwebStrategy extends Strategy {
 
     if (!authResult || !authResult?.sub) {
       this.fail();
+      this.payload.logger.error(`Failed to authenticate user. JWT payload is missing or invalid.`);
+
       return;
     }
 

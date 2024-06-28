@@ -23,12 +23,21 @@ export const thirdweb = (thirdwebConfig: ThirdwebConfig) => {
       ),
     (payloadConfig: PayloadConfig) => {
       if (typeof window !== `undefined`) {
+        if (!payloadConfig.admin?.components?.providers) {
+          payloadConfig.admin.components.providers = [];
+        }
+
+        payloadConfig.admin.components.providers = [
+          ...payloadConfig.admin.components.providers,
+          require(`./config/components/Provider`).default,
+        ];
+
         if (!payloadConfig.admin?.components?.afterLogin) {
           payloadConfig.admin.components.afterLogin = [];
         }
         payloadConfig.admin.components.afterLogin = [
           ...payloadConfig.admin.components.afterLogin,
-          require(`./config/components/Provider`).default,
+          require(`./config/components/SignInButton`).default,
         ];
       }
       return payloadConfig;

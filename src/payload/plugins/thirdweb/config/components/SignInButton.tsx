@@ -16,39 +16,38 @@ export const SignInButton = () => {
       <ConnectButton
         auth={{
           getLoginPayload: async ({ address }) => {
-            const { data } = await fetch(
-              `${process.env.PAYLOAD_PUBLIC_SERVER_URL}/api/users/auth?address=${address}`,
-              {
-                method: `GET`,
-              },
-            ).then(res => res.json());
+            const data = await fetch(`/api/users/auth/admin?address=${address}`, {
+              method: `GET`,
+            }).then(res => res.json());
 
             return data;
           },
 
           doLogin: async params => {
-            await fetch(`${process.env.PAYLOAD_PUBLIC_SERVER_URL}/api/users/auth`, {
+            const { token } = await fetch(`/api/users/auth/admin`, {
               method: `POST`,
               headers: {
                 'Content-Type': `application/json`,
               },
               body: JSON.stringify(params),
             }).then(res => res.json());
+
+            if (token) {
+              window.history.pushState({}, ``, `/admin`);
+              window.history.go(0);
+            }
           },
 
           isLoggedIn: async () => {
-            const { data } = await fetch(
-              `${process.env.PAYLOAD_PUBLIC_SERVER_URL}/api/users/auth/account`,
-              {
-                method: `GET`,
-              },
-            ).then(res => res.json());
+            const data = await fetch(`/api/users/auth/admin/account`, {
+              method: `GET`,
+            }).then(res => res.json());
 
             return data.isLoggedIn;
           },
 
           doLogout: async () => {
-            await fetch(`${process.env.PAYLOAD_PUBLIC_SERVER_URL}/api/users/auth/logout`, {
+            await fetch(`/api/users/logout`, {
               method: `POST`,
             }).then(res => res.json());
           },
