@@ -185,7 +185,7 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   async getJWTPayload(req: Request) {
-    const isAdminPath = this.isAdminPath(req.url);
+    const isAdminPath = this.isAdminPath(req.headers.referer || ``);
 
     const key = this.getSessionKey(isAdminPath);
     const jwt = ThirdwebStrategy.extractJWT(req, key);
@@ -219,7 +219,7 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   async verifyJWT(req: Request, params: VerifyJWTParams): Promise<JWTPayload> {
-    const isAdminPath = this.isAdminPath(req.url);
+    const isAdminPath = this.isAdminPath(req.headers.referer || ``);
     const clientAuth = this.getServerClientAuth(isAdminPath);
 
     const result = await clientAuth.verifyJWT(params);

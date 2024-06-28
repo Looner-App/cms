@@ -58,6 +58,12 @@ export const collections = ({
           context: StrategyContext.Client,
           strategy,
         });
+
+        collection.endpoints = userEndpoints({
+          endpoints: collection.endpoints as Endpoint[],
+          context: StrategyContext.Admin,
+          strategy,
+        });
       }
 
       collection.fields = fields({

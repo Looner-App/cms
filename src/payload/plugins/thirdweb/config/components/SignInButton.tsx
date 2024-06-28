@@ -36,7 +36,7 @@ export const SignInButton = () => {
               setTimeout(() => {
                 window.history.pushState({}, ``, `/admin`);
                 window.history.go(0);
-              }, 4000);
+              }, 6000);
             }
           },
 
