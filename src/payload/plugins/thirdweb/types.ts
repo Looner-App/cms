@@ -13,6 +13,7 @@ export type ThirdwebUser = {
 export type StrategyOptions = {
   clientId: string;
   domain: string;
+  domainClient: string;
   privateKey: string;
   secretKey: string;
   userDetailsUrl: string;

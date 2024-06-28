@@ -7,9 +7,9 @@ import payload from 'payload';
 
 import ThirdwebStrategy from '../config/ThirdwebStrategy';
 import { isServer } from '../config/client';
-import { endpoints } from '../endpoints/users';
+import { endpoints as userEndpoints } from '../endpoints/users';
 import { fields } from '../fields/users';
-import { strategies } from '../strategies/users';
+import { strategies as userStrategies } from '../strategies/users';
 import { StrategyContext, type Config as ThirdwebConfig } from '../types';
 
 export type CollectionsParams = {
@@ -37,50 +37,26 @@ export const collections = ({
         }
 
         if (isEmpty(collection.auth)) {
-          collection.auth = {};
+          collection.auth = {
+            strategies: [],
+          };
         }
 
-        /// user
+        const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
 
-        const strategy = new ThirdwebStrategy(
-          payload,
-          `users`,
-          thirdwebConfig.strategyOptions,
-          `thirdweb_frontend`,
-        );
+        if (isEmpty(collection.auth.strategies)) {
+          collection.auth.strategies = [];
+        }
 
-        collection.endpoints = endpoints({
+        collection.auth.strategies = userStrategies({
+          strategies: collection.auth.strategies,
+          strategy,
+        });
+
+        collection.endpoints = userEndpoints({
           endpoints: collection.endpoints as Endpoint[],
           context: StrategyContext.Client,
           strategy,
-        });
-
-        collection.auth.strategies = strategies({
-          strategies: collection.auth.strategies,
-          strategy,
-        });
-
-        /// admin
-
-        const strategyAdmin = new ThirdwebStrategy(
-          payload,
-          `users`,
-          {
-            ...thirdwebConfig.strategyOptions,
-            domain: process.env.PAYLOAD_PUBLIC_SERVER_URL,
-          },
-          `thirdweb_backend`,
-        );
-
-        collection.auth.strategies = strategies({
-          strategies: collection.auth.strategies,
-          strategy: strategyAdmin,
-        });
-
-        collection.endpoints = endpoints({
-          endpoints: collection.endpoints as Endpoint[],
-          context: StrategyContext.Admin,
-          strategy: strategyAdmin,
         });
       }
 

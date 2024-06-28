@@ -17,29 +17,38 @@ import { createClient, createClientAuth } from './client';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
-  key: string;
+  _serverClientAuth: ServerClientAuth;
+  _serverClientAuthClient: ServerClientAuth;
+
+  name = `thirdweb`;
   opts: StrategyOptions;
   payload: Payload;
   serverClient: ServerClient;
-  serverClientAuth: ServerClientAuth;
   slug: string;
 
-  constructor(payload: Payload, slug: string, opts: StrategyOptions, key = `thirdweb`) {
+  constructor(payload: Payload, slug: string, opts: StrategyOptions) {
     super();
 
     this.payload = payload;
     this.opts = opts;
     this.slug = slug;
 
-    this.key = key;
-
+    /// work in ssr and csr
     this.serverClient = createClient({
       secretKey: this.opts.secretKey,
     });
 
-    this.serverClientAuth = createClientAuth(
+    /// only ssr
+    this._serverClientAuth = createClientAuth(
       this.serverClient,
       this.opts.domain,
+      this.opts.privateKey,
+    );
+
+    /// only csr
+    this._serverClientAuthClient = createClientAuth(
+      this.serverClient,
+      this.opts.domainClient,
       this.opts.privateKey,
     );
   }
@@ -117,7 +126,7 @@ export class ThirdwebStrategy extends Strategy {
 
   private login(user: User): void {
     user.collection = this.slug;
-    user._strategy = `${this.slug}-${this.key}`;
+    user._strategy = `${this.slug}-${this.name}`;
     this.payload.logger.info(`User has been authenticated: ${JSON.stringify(user)}`);
     this.success(user);
   }
@@ -154,11 +163,15 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   async authenticate(req: Request) {
+    const isAdminPath = this.isAdminPath(req.headers?.referer || ``);
+
+    const key = this.getSessionKey(isAdminPath);
+
     const authResult = await this.getJWTPayload(req);
     if (!authResult || !authResult?.sub) {
       this.fail();
       this.payload.logger.error(
-        `Failed to authenticate user. JWT payload is missing or invalid: ${this.key}`,
+        `Failed to authenticate user. JWT payload is missing or invalid: ${key}`,
       );
 
       return;
@@ -172,18 +185,44 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   async getJWTPayload(req: Request) {
-    const jwt = ThirdwebStrategy.extractJWT(req, this.key);
+    const isAdminPath = this.isAdminPath(req.url);
+
+    const key = this.getSessionKey(isAdminPath);
+    const jwt = ThirdwebStrategy.extractJWT(req, key);
 
     if (!jwt) return null;
 
-    const result = await this.verifyJWT({ jwt });
+    const result = await this.verifyJWT(req, { jwt });
     if (!result?.sub) return null;
 
     return result;
   }
 
-  async verifyJWT(params: VerifyJWTParams): Promise<JWTPayload> {
-    const result = await this.serverClientAuth.verifyJWT(params);
+  getServerClientAuth(isAdmin: boolean) {
+    if (isAdmin) {
+      return this._serverClientAuth;
+    }
+
+    return this._serverClientAuthClient;
+  }
+
+  getSessionKey(isAdmin: boolean) {
+    if (isAdmin) {
+      return `thirdweb_backend`;
+    }
+
+    return `thirdweb_frontend`;
+  }
+
+  isAdminPath(path: string) {
+    return path.includes(this.opts.domain);
+  }
+
+  async verifyJWT(req: Request, params: VerifyJWTParams): Promise<JWTPayload> {
+    const isAdminPath = this.isAdminPath(req.url);
+    const clientAuth = this.getServerClientAuth(isAdminPath);
+
+    const result = await clientAuth.verifyJWT(params);
 
     return result.valid
       ? {
