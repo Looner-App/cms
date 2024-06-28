@@ -17,20 +17,21 @@ import { createClient, createClientAuth } from './client';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
-  name = `jwt`;
+  name: string;
   opts: StrategyOptions;
   payload: Payload;
   serverClient: ServerClient;
   serverClientAuth: ServerClientAuth;
   slug: string;
 
-  constructor(payload: Payload, slug: string, opts: StrategyOptions) {
+  constructor(payload: Payload, slug: string, opts: StrategyOptions, name = `thirdweb`) {
     super();
 
     this.payload = payload;
     this.opts = opts;
     this.slug = slug;
 
+    this.name = name;
     this.serverClient = createClient({
       secretKey: this.opts.secretKey,
     });
@@ -141,9 +142,13 @@ export class ThirdwebStrategy extends Strategy {
 
       if (!user) {
         const newUser = await this.createUser(sub, Role.User);
+        console.log(`newUser`, newUser);
+
         this.login(newUser);
         return;
       }
+
+      console.log(`user`, user);
 
       return this.login(user);
     } catch (e) {
@@ -154,6 +159,7 @@ export class ThirdwebStrategy extends Strategy {
 
   async authenticate(req: Request) {
     const authResult = await this.getJWTPayload(req);
+    console.log(`authResult`, authResult);
 
     if (!authResult || !authResult?.sub) {
       this.fail();
@@ -171,6 +177,7 @@ export class ThirdwebStrategy extends Strategy {
 
   async getJWTPayload(req: Request) {
     const jwt = ThirdwebStrategy.extractJWT(req);
+
     if (!jwt) return null;
 
     const result = await this.verifyJWT({ jwt });
@@ -181,6 +188,8 @@ export class ThirdwebStrategy extends Strategy {
 
   async verifyJWT(params: VerifyJWTParams): Promise<JWTPayload> {
     const result = await this.serverClientAuth.verifyJWT(params);
+    console.log(result);
+
     return result.valid
       ? {
           ...result.parsedJWT,

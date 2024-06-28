@@ -32,10 +32,15 @@ export const collections = ({
 
         const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
 
-        const strategyAdmin = new ThirdwebStrategy(payload, `users`, {
-          ...thirdwebConfig.strategyOptions,
-          domain: process.env.PAYLOAD_PUBLIC_SERVER_URL,
-        });
+        // const strategyAdmin = new ThirdwebStrategy(
+        //   payload,
+        //   `users`,
+        //   {
+        //     ...thirdwebConfig.strategyOptions,
+        //     domain: process.env.PAYLOAD_PUBLIC_SERVER_URL,
+        //   },
+        //   `payload-token`,
+        // );
 
         if (typeof collection.auth === `boolean`) {
           throw new Error(
@@ -49,29 +54,28 @@ export const collections = ({
 
         /// user
 
-        collection.auth.strategies = strategies({
-          strategies: collection.auth.strategies,
-          strategy,
-        });
-
         collection.endpoints = endpoints({
           endpoints: collection.endpoints as Endpoint[],
           context: StrategyContext.Client,
           strategy,
         });
 
-        /// admin
-
         collection.auth.strategies = strategies({
           strategies: collection.auth.strategies,
-          strategy: strategyAdmin,
+          strategy,
         });
 
-        collection.endpoints = endpoints({
-          endpoints: collection.endpoints as Endpoint[],
-          context: StrategyContext.Admin,
-          strategy: strategyAdmin,
-        });
+        /// admin
+        // collection.endpoints = endpoints({
+        //   endpoints: collection.endpoints as Endpoint[],
+        //   context: StrategyContext.Admin,
+        //   strategy: strategyAdmin,
+        // });
+
+        // collection.auth.strategies = strategies({
+        //   strategies: collection.auth.strategies,
+        //   strategy: strategyAdmin,
+        // });
       }
 
       collection.fields = fields({

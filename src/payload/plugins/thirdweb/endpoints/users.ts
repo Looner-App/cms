@@ -42,11 +42,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
               secure: process.env.NODE_ENV === `production`,
             });
 
-            return res
-              .header({
-                Location: `/admin`,
-              })
-              .send({ token: jwt });
+            return res.send({ token: jwt });
           }
 
           return res.send({
@@ -105,7 +101,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
           return res.send({ token: jwt });
         }
 
-        return res.sendStatus(401);
+        return res.send({ token: null });
       },
     },
     {
@@ -115,7 +111,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
         const jwt = ThirdwebStrategy.extractJWT(req);
 
         if (!jwt) {
-          return res.sendStatus(401);
+          return res.send({ isLoggedIn: false });
         }
 
         const authResult = await strategy.verifyJWT({
@@ -123,7 +119,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
         });
 
         if (!authResult) {
-          return res.sendStatus(401);
+          return res.send({ isLoggedIn: false });
         }
 
         return res.send({ isLoggedIn: true });
