@@ -16,7 +16,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
     return [
       ...endpoints,
       {
-        path: `/auth/admin`,
+        path: `/auth_admin`,
         method: `get`,
         handler: async (req: PayloadRequest, res: Response) => {
           const payload = await strategy.serverClientAuth.generatePayload({
@@ -27,7 +27,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
         },
       },
       {
-        path: `/auth/admin`,
+        path: `/auth_admin`,
         method: `post`,
         handler: async (req: PayloadRequest, res: Response) => {
           const verifiedPayloadResult = await strategy.serverClientAuth.verifyPayload(req.body);
@@ -37,7 +37,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
               payload: verifiedPayloadResult.payload,
             });
 
-            res.cookie(`jwt`, jwt, {
+            res.cookie(strategy.key, jwt, {
               httpOnly: true,
               secure: process.env.NODE_ENV === `production`,
             });
@@ -51,10 +51,10 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
         },
       },
       {
-        path: `/auth/admin/account`,
+        path: `/auth_admin/account`,
         method: `get`,
         handler: async (req: PayloadRequest, res: Response) => {
-          const jwt = ThirdwebStrategy.extractJWT(req);
+          const jwt = ThirdwebStrategy.extractJWT(req, strategy.key);
 
           if (!jwt) {
             return res.json({ isLoggedIn: false });
@@ -108,7 +108,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
       path: `/auth/account`,
       method: `get`,
       handler: async (req: PayloadRequest, res: Response) => {
-        const jwt = ThirdwebStrategy.extractJWT(req);
+        const jwt = ThirdwebStrategy.extractJWT(req, strategy.key);
 
         if (!jwt) {
           return res.send({ isLoggedIn: false });

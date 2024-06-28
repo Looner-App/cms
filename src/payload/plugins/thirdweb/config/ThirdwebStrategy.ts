@@ -17,21 +17,22 @@ import { createClient, createClientAuth } from './client';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
-  name: string;
+  key: string;
   opts: StrategyOptions;
   payload: Payload;
   serverClient: ServerClient;
   serverClientAuth: ServerClientAuth;
   slug: string;
 
-  constructor(payload: Payload, slug: string, opts: StrategyOptions, name = `thirdweb`) {
+  constructor(payload: Payload, slug: string, opts: StrategyOptions, key = `thirdweb`) {
     super();
 
     this.payload = payload;
     this.opts = opts;
     this.slug = slug;
 
-    this.name = name;
+    this.key = key;
+
     this.serverClient = createClient({
       secretKey: this.opts.secretKey,
     });
@@ -43,9 +44,9 @@ export class ThirdwebStrategy extends Strategy {
     );
   }
 
-  static extractJWT(req: Request) {
+  static extractJWT(req: Request, key: string) {
     const cookie = new Cookies(req, null);
-    return cookie.get(`jwt`);
+    return cookie.get(key);
   }
 
   private async createUser(sub: string, role: Role): Promise<User> {
@@ -107,8 +108,6 @@ export class ThirdwebStrategy extends Strategy {
 
       const data = await resp.json();
 
-      console.log(`thirdweb user`, data);
-
       return data;
     } catch (e) {
       this.payload.logger.error(e);
@@ -118,8 +117,8 @@ export class ThirdwebStrategy extends Strategy {
 
   private login(user: User): void {
     user.collection = this.slug;
-    user._strategy = `${this.slug}-${this.name}`;
-    console.log(`user`, user);
+    user._strategy = `${this.slug}-${this.key}`;
+    this.payload.logger.info(`User has been authenticated: ${JSON.stringify(user)}`);
     this.success(user);
   }
 
@@ -142,13 +141,10 @@ export class ThirdwebStrategy extends Strategy {
 
       if (!user) {
         const newUser = await this.createUser(sub, Role.User);
-        console.log(`newUser`, newUser);
 
         this.login(newUser);
         return;
       }
-
-      console.log(`user`, user);
 
       return this.login(user);
     } catch (e) {
@@ -159,11 +155,11 @@ export class ThirdwebStrategy extends Strategy {
 
   async authenticate(req: Request) {
     const authResult = await this.getJWTPayload(req);
-    console.log(`authResult`, authResult);
-
     if (!authResult || !authResult?.sub) {
       this.fail();
-      this.payload.logger.error(`Failed to authenticate user. JWT payload is missing or invalid.`);
+      this.payload.logger.error(
+        `Failed to authenticate user. JWT payload is missing or invalid: ${this.key}`,
+      );
 
       return;
     }
@@ -176,7 +172,7 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   async getJWTPayload(req: Request) {
-    const jwt = ThirdwebStrategy.extractJWT(req);
+    const jwt = ThirdwebStrategy.extractJWT(req, this.key);
 
     if (!jwt) return null;
 
@@ -188,7 +184,6 @@ export class ThirdwebStrategy extends Strategy {
 
   async verifyJWT(params: VerifyJWTParams): Promise<JWTPayload> {
     const result = await this.serverClientAuth.verifyJWT(params);
-    console.log(result);
 
     return result.valid
       ? {

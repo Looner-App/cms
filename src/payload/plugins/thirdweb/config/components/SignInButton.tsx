@@ -16,7 +16,7 @@ export const SignInButton = () => {
       <ConnectButton
         auth={{
           getLoginPayload: async ({ address }) => {
-            const data = await fetch(`/api/users/auth/admin?address=${address}`, {
+            const data = await fetch(`/api/users/auth_admin?address=${address}`, {
               method: `GET`,
             }).then(res => res.json());
 
@@ -24,22 +24,17 @@ export const SignInButton = () => {
           },
 
           doLogin: async params => {
-            const { token } = await fetch(`/api/users/auth/admin`, {
+            await fetch(`/api/users/auth_admin`, {
               method: `POST`,
               headers: {
                 'Content-Type': `application/json`,
               },
               body: JSON.stringify(params),
             }).then(res => res.json());
-
-            if (token) {
-              window.history.pushState({}, ``, `/admin`);
-              window.history.go(0);
-            }
           },
 
           isLoggedIn: async () => {
-            const data = await fetch(`/api/users/auth/admin/account`, {
+            const data = await fetch(`/api/users/auth_admin/account`, {
               method: `GET`,
             }).then(res => res.json());
 

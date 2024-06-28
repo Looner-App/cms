@@ -30,18 +30,6 @@ export const collections = ({
          * inject the thrdweb strategy and endpoints
          */
 
-        const strategy = new ThirdwebStrategy(payload, `users`, thirdwebConfig.strategyOptions);
-
-        // const strategyAdmin = new ThirdwebStrategy(
-        //   payload,
-        //   `users`,
-        //   {
-        //     ...thirdwebConfig.strategyOptions,
-        //     domain: process.env.PAYLOAD_PUBLIC_SERVER_URL,
-        //   },
-        //   `payload-token`,
-        // );
-
         if (typeof collection.auth === `boolean`) {
           throw new Error(
             `Collection ${collection.slug} set as boolean for auth, must be an object or empty to enable strategies injection`,
@@ -53,6 +41,13 @@ export const collections = ({
         }
 
         /// user
+
+        const strategy = new ThirdwebStrategy(
+          payload,
+          `users`,
+          thirdwebConfig.strategyOptions,
+          `thirdweb_frontend`,
+        );
 
         collection.endpoints = endpoints({
           endpoints: collection.endpoints as Endpoint[],
@@ -66,16 +61,27 @@ export const collections = ({
         });
 
         /// admin
-        // collection.endpoints = endpoints({
-        //   endpoints: collection.endpoints as Endpoint[],
-        //   context: StrategyContext.Admin,
-        //   strategy: strategyAdmin,
-        // });
 
-        // collection.auth.strategies = strategies({
-        //   strategies: collection.auth.strategies,
-        //   strategy: strategyAdmin,
-        // });
+        const strategyAdmin = new ThirdwebStrategy(
+          payload,
+          `users`,
+          {
+            ...thirdwebConfig.strategyOptions,
+            domain: process.env.PAYLOAD_PUBLIC_SERVER_URL,
+          },
+          `thirdweb_backend`,
+        );
+
+        collection.auth.strategies = strategies({
+          strategies: collection.auth.strategies,
+          strategy: strategyAdmin,
+        });
+
+        collection.endpoints = endpoints({
+          endpoints: collection.endpoints as Endpoint[],
+          context: StrategyContext.Admin,
+          strategy: strategyAdmin,
+        });
       }
 
       collection.fields = fields({
