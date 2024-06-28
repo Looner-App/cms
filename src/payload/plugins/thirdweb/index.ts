@@ -5,6 +5,7 @@ import { flow, merge, reduce } from 'lodash';
 import type { Config as ThirdwebConfig } from './types';
 
 import { collections } from './collections';
+// import { isServer } from './config/client';
 // import { Provider } from './config/components/Provider';
 // import SignInButton from './config/components/SignInButton';
 
@@ -24,16 +25,15 @@ export const thirdweb = (thirdwebConfig: ThirdwebConfig) => {
         payloadConfig,
       ),
     (payloadConfig: PayloadConfig) => {
-      payloadConfig.admin = {
-        ...payloadConfig.admin,
-        components: {
-          ...payloadConfig.admin.components,
-          /// todo:
-          // providers: [...payloadConfig.admin.components.providers, Provider],
-          // afterLogin: [...payloadConfig.admin.components.afterLogin, SignInButton],
-        },
-      };
-
+      if (typeof window !== `undefined`) {
+        if (!payloadConfig.admin?.components?.afterLogin) {
+          payloadConfig.admin.components.afterLogin = [];
+        }
+        payloadConfig.admin.components.afterLogin = [
+          ...payloadConfig.admin.components.afterLogin,
+          require(`./config/components/Provider`).default,
+        ];
+      }
       return payloadConfig;
     },
   );
