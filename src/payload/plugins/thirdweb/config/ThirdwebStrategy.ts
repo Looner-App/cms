@@ -106,6 +106,8 @@ export class ThirdwebStrategy extends Strategy {
 
       const data = await resp.json();
 
+      console.log(`thirdweb user`, data);
+
       return data;
     } catch {
       return [];
@@ -115,6 +117,7 @@ export class ThirdwebStrategy extends Strategy {
   private login(user: User): void {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
+    console.log(`user`, user);
     this.success(user);
   }
 
@@ -143,6 +146,7 @@ export class ThirdwebStrategy extends Strategy {
 
       return this.login(user);
     } catch (e) {
+      this.payload.logger.error(e);
       this.fail();
     }
   }
