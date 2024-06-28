@@ -5,9 +5,6 @@ import { flow, merge, reduce } from 'lodash';
 import type { Config as ThirdwebConfig } from './types';
 
 import { collections } from './collections';
-// import { isServer } from './config/client';
-// import { Provider } from './config/components/Provider';
-// import SignInButton from './config/components/SignInButton';
 
 export const thirdweb = (thirdwebConfig: ThirdwebConfig) => {
   return flow(
