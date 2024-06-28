@@ -17,7 +17,7 @@ import { createClient, createClientAuth } from './client';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
-  name = `thirdweb`;
+  name = `jwt`;
   opts: StrategyOptions;
   payload: Payload;
   serverClient: ServerClient;
