@@ -24,13 +24,20 @@ export const SignInButton = () => {
           },
 
           doLogin: async params => {
-            await fetch(`/api/users/auth_admin`, {
+            const { token } = await fetch(`/api/users/auth_admin`, {
               method: `POST`,
               headers: {
                 'Content-Type': `application/json`,
               },
               body: JSON.stringify(params),
             }).then(res => res.json());
+
+            if (token) {
+              setTimeout(() => {
+                window.history.pushState({}, ``, `/admin`);
+                window.history.go(0);
+              }, 4000);
+            }
           },
 
           isLoggedIn: async () => {
