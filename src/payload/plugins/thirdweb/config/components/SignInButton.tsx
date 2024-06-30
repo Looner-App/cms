@@ -15,10 +15,13 @@ export const SignInButton = () => {
     <div className="bg-azure-blue text-white rounded-lg button-wallet">
       <ConnectButton
         auth={{
-          getLoginPayload: async ({ address }) => {
-            const data = await fetch(`/api/users/auth_admin?address=${address}`, {
-              method: `GET`,
-            }).then(res => res.json());
+          getLoginPayload: async ({ address, chainId }) => {
+            const data = await fetch(
+              `/api/users/auth_admin?address=${address}&chainId=${chainId}`,
+              {
+                method: `GET`,
+              },
+            ).then(res => res.json());
 
             return data;
           },

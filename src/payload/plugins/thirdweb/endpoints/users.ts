@@ -23,6 +23,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
 
           const payload = await clientAuth.generatePayload({
             address: `${req.query.address}`,
+            chainId: Number(req.query.chainId),
           });
 
           return res.send(payload);
@@ -89,6 +90,7 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
 
         const payload = await clientAuth.generatePayload({
           address: `${req.query.address}`,
+          chainId: Number(req.query.chainId),
         });
 
         return res.send(payload);
