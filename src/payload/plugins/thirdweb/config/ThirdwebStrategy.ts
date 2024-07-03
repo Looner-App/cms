@@ -98,36 +98,39 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   private async findThirdwebUser(sub: string): Promise<ThirdwebUser[]> {
-    try {
-      if (!sub) return [];
-
-      const url = new URL(this.opts.userDetailsUrl);
-      if (sub) {
-        url.searchParams.set(`queryBy`, `walletAddress`);
-        url.searchParams.set(`walletAddress`, sub);
-      }
-
-      const headers = new Headers();
-      headers.append(`Authorization`, `Bearer ${this.opts.secretKey}`);
-
-      const resp = await fetch(url, {
-        method: `GET`,
-        headers,
-      });
-
-      const data = await resp.json();
-
-      return data;
-    } catch (e) {
-      this.payload.logger.error(e);
+    if (!sub) {
+      this.payload.logger.error(`No sub`);
       return [];
     }
+
+    const url = new URL(this.opts.userDetailsUrl);
+
+    url.searchParams.set(`queryBy`, `walletAddress`);
+    url.searchParams.set(`walletAddress`, sub);
+
+    const headers = new Headers();
+    headers.append(`Authorization`, `Bearer ${this.opts.secretKey}`);
+
+    const resp = await fetch(url, {
+      method: `GET`,
+      headers,
+    });
+
+    const data = await resp.json();
+
+    if (resp.status < 200 || resp.status >= 300) {
+      this.payload.logger.error(`Failed to fetch user details: ${sub}`);
+      return [];
+    }
+
+    return data;
   }
 
   private login(user: User): void {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
     this.payload.logger.info(`User has been authenticated: ${JSON.stringify(user)}`);
+
     this.success(user);
   }
 
@@ -145,39 +148,31 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   private async signIn(sub: string): Promise<void> {
-    try {
-      const user = await this.findPayloadUser(this.payload, sub);
+    const user = await this.findPayloadUser(this.payload, sub);
 
-      if (!user) {
-        const newUser = await this.createUser(sub, Role.User);
-
-        this.login(newUser);
-        return;
-      }
-
-      return this.login(user);
-    } catch (e) {
-      this.payload.logger.error(e);
-      this.fail();
-    }
-  }
-
-  async authenticate(req: Request) {
-    const isAdminPath = this.isAdminPath(req.headers?.referer || ``);
-
-    const key = this.getSessionKey(isAdminPath);
-
-    const authResult = await this.getJWTPayload(req);
-    if (!authResult || !authResult?.sub) {
-      this.fail();
-      this.payload.logger.error(
-        `Failed to authenticate user. JWT payload is missing or invalid: ${key}`,
-      );
-
+    if (!user) {
+      const newUser = await this.createUser(sub, Role.User);
+      this.login(newUser);
       return;
     }
 
-    this.signIn(authResult.sub);
+    return this.login(user);
+  }
+
+  async authenticate(req: Request) {
+    try {
+      const authResult = await this.getJWTPayload(req);
+
+      if (!authResult || !authResult?.sub) {
+        this.payload.logger.error(`No auth result or sub`);
+        this.fail();
+      } else {
+        await this.signIn(authResult.sub);
+      }
+    } catch {
+      this.payload.logger.error(`Failed to authenticate`);
+      this.fail();
+    }
   }
 
   createRandomPassword() {
@@ -190,10 +185,16 @@ export class ThirdwebStrategy extends Strategy {
     const key = this.getSessionKey(isAdminPath);
     const jwt = ThirdwebStrategy.extractJWT(req, key);
 
-    if (!jwt) return null;
+    if (!jwt) {
+      this.payload.logger.error(`No JWT found`);
+      return null;
+    }
 
     const result = await this.verifyJWT(req, { jwt });
-    if (!result?.sub) return null;
+    if (!result?.sub) {
+      this.payload.logger.error(`No sub found`);
+      return null;
+    }
 
     return result;
   }
@@ -224,11 +225,12 @@ export class ThirdwebStrategy extends Strategy {
 
     const result = await clientAuth.verifyJWT(params);
 
-    return result.valid
-      ? {
-          ...result.parsedJWT,
-        }
-      : null;
+    if (!result.valid) {
+      this.payload.logger.error(`JWT is not valid: ${JSON.stringify(result)}`);
+      return null;
+    }
+
+    return result.parsedJWT;
   }
 }
 

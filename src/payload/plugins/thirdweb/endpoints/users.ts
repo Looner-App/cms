@@ -111,7 +111,10 @@ export const endpoints = ({ endpoints = [], strategy, context }: EndpointParams)
           return res.send({ token: jwt });
         }
 
-        return res.send({ token: null });
+        return res.send({
+          token: null,
+          error: verifiedPayloadResult.valid === false ? verifiedPayloadResult?.error : ``,
+        });
       },
     },
     {
