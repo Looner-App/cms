@@ -2,6 +2,7 @@ import type { TypeWithID } from 'payload/types';
 
 export enum SettingsKeys {
   PointsPerReferral = `pointsPerReferral`,
+  PointsPerReferralInvited = `pointsPerReferralInvited`,
   RewardsProgram = `rewardsProgram`,
 }
 

@@ -58,7 +58,7 @@ export class ThirdwebStrategy extends Strategy {
     return cookie.get(key);
   }
 
-  private async createUser(sub: string, role: Role): Promise<User> {
+  private async createUser(sub: string, role: Role, referral?: string): Promise<User> {
     const password = this.createRandomPassword();
     const email = `${crypto.randomUUID()}@looner.io`;
 
@@ -70,6 +70,7 @@ export class ThirdwebStrategy extends Strategy {
         email,
         password,
         sub,
+        invitationReferralCode: referral,
         roles: [role],
       },
     });
@@ -147,11 +148,11 @@ export class ThirdwebStrategy extends Strategy {
     return updatedUser as User;
   }
 
-  private async signIn(sub: string): Promise<void> {
+  private async signIn(sub: string, referral?: string): Promise<void> {
     const user = await this.findPayloadUser(this.payload, sub);
 
     if (!user) {
-      const newUser = await this.createUser(sub, Role.User);
+      const newUser = await this.createUser(sub, Role.User, referral);
       this.login(newUser);
       return;
     }
@@ -167,7 +168,9 @@ export class ThirdwebStrategy extends Strategy {
         this.payload.logger.error(`No auth result or sub`);
         this.fail();
       } else {
-        await this.signIn(authResult.sub);
+        const referral = ThirdwebStrategy.extractJWT(req, `x-referral`);
+        console.log(`referral`, referral);
+        await this.signIn(authResult.sub, referral);
       }
     } catch {
       this.payload.logger.error(`Failed to authenticate`);
