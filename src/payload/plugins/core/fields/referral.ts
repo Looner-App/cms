@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload/types';
 
-import randomstring from 'randomstring';
-
 import { adminsAndUser } from '../../../access';
 
 export enum ReferralContext {
@@ -30,11 +28,9 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
         },
         hooks: {
           afterRead: [
-            ({ value, siblingData }) => {
+            ({ value }) => {
               if (!value) {
-                value = randomstring.generate({
-                  charset: `${siblingData.id}${new Date().getTime()}`,
-                });
+                value = crypto.randomUUID();
               }
 
               return value;
@@ -43,9 +39,7 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
           beforeChange: [
             async ({ value, siblingData, req }) => {
               if (!value) {
-                value = randomstring.generate({
-                  charset: `${siblingData.email}${siblingData.id}${new Date().getTime()}`,
-                });
+                value = crypto.randomUUID();
 
                 await req.payload.create({
                   collection: `referral`,
