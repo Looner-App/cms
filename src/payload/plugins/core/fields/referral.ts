@@ -28,9 +28,31 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
         },
         hooks: {
           afterRead: [
-            ({ value }) => {
+            async ({ value, req }) => {
               if (!value) {
-                value = crypto.randomUUID();
+                /// before, find one item that has the same user
+                const referral = await req.payload.find({
+                  collection: `referral`,
+                  where: {
+                    user: req.user,
+                  },
+                });
+
+                const foundReferral = referral.docs?.[0]?.referralCode;
+
+                if (foundReferral) {
+                  value = referral.docs?.[0]?.referralCode;
+                } else {
+                  value = crypto.randomUUID();
+                  await req.payload.create({
+                    user: req.user,
+                    collection: `referral`,
+                    data: {
+                      user: req.user,
+                      referralCode: value,
+                    },
+                  });
+                }
               }
 
               return value;
@@ -53,16 +75,15 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
                   value = referral.docs?.[0]?.referralCode;
                 } else {
                   value = crypto.randomUUID();
-                }
-
-                await req.payload.create({
-                  user: req.user,
-                  collection: `referral`,
-                  data: {
+                  await req.payload.create({
                     user: req.user,
-                    referralCode: value,
-                  },
-                });
+                    collection: `referral`,
+                    data: {
+                      user: req.user,
+                      referralCode: value,
+                    },
+                  });
+                }
               }
 
               return value;
