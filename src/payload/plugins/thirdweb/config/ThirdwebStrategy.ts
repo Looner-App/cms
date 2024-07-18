@@ -168,8 +168,10 @@ export class ThirdwebStrategy extends Strategy {
         this.payload.logger.error(`No auth result or sub`);
         this.fail();
       } else {
-        const referral = ThirdwebStrategy.extractJWT(req, `x-referral`);
-        console.log(`referral`, referral);
+        const referral = ThirdwebStrategy.extractJWT(req, `referral`);
+        if (referral) {
+          this.payload.logger.info(`${authResult.sub} has been referred by ${referral}`);
+        }
         await this.signIn(authResult.sub, referral);
       }
     } catch {
