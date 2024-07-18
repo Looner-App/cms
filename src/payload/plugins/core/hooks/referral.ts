@@ -61,7 +61,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
               const coreSettings = (await req.payload.findGlobal({
                 slug: `core`,
               })) as Settings;
-
+              /// test
               /// referral settings
               const rewardsProgram: RewardsProgram[] = coreSettings[SettingsKeys.RewardsProgram];
               const pointsPerReferral = Number(coreSettings[SettingsKeys.PointsPerReferral]);
