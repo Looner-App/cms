@@ -169,9 +169,7 @@ export class ThirdwebStrategy extends Strategy {
         this.fail();
       } else {
         const referral = ThirdwebStrategy.extractJWT(req, `referral`);
-        if (referral) {
-          this.payload.logger.info(`${authResult.sub} has been referred by ${referral}`);
-        }
+
         await this.signIn(authResult.sub, referral);
       }
     } catch {
