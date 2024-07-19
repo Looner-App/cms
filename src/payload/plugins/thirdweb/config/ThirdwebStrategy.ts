@@ -58,7 +58,7 @@ export class ThirdwebStrategy extends Strategy {
     return cookie.get(key);
   }
 
-  private async createUser(sub: string, role: Role, referral?: string): Promise<User> {
+  private async createUser(sub: string, role: Role): Promise<User> {
     const password = this.createRandomPassword();
     const email = `${crypto.randomUUID()}@looner.io`;
 
@@ -70,7 +70,6 @@ export class ThirdwebStrategy extends Strategy {
         email,
         password,
         sub,
-        invitationReferralCode: referral,
         roles: [role],
       },
     });
@@ -120,7 +119,6 @@ export class ThirdwebStrategy extends Strategy {
     const data = await resp.json();
 
     if (resp.status < 200 || resp.status >= 300) {
-      this.payload.logger.error(`Failed to fetch user details: ${sub}`);
       return [];
     }
 
@@ -130,9 +128,8 @@ export class ThirdwebStrategy extends Strategy {
   private login(user: User): void {
     user.collection = this.slug;
     user._strategy = `${this.slug}-${this.name}`;
-    this.payload.logger.info(`User has been authenticated: ${JSON.stringify(user)}`);
-
     this.success(user);
+    this.payload.logger.info(`User has been authenticated: ${JSON.stringify(user.id)}`);
   }
 
   private async mergeUser(user: User, thirdwebUser?: ThirdwebUser): Promise<User> {
@@ -148,16 +145,15 @@ export class ThirdwebStrategy extends Strategy {
     return updatedUser as User;
   }
 
-  private async signIn(sub: string, referral?: string): Promise<void> {
+  private async signIn(sub: string): Promise<void> {
     const user = await this.findPayloadUser(this.payload, sub);
-
-    if (!user) {
-      const newUser = await this.createUser(sub, Role.User, referral);
-      this.login(newUser);
+    if (user) {
+      this.login(user);
       return;
     }
 
-    return this.login(user);
+    const newUser = await this.createUser(sub, Role.User);
+    this.login(newUser);
   }
 
   async authenticate(req: Request) {
@@ -165,15 +161,13 @@ export class ThirdwebStrategy extends Strategy {
       const authResult = await this.getJWTPayload(req);
 
       if (!authResult || !authResult?.sub) {
-        this.payload.logger.error(`No auth result or sub`);
+        this.payload.logger.error(`Error in authenticate: No auth result or sub`);
         this.fail();
       } else {
-        const referral = ThirdwebStrategy.extractJWT(req, `referral`);
-
-        await this.signIn(authResult.sub, referral);
+        await this.signIn(authResult.sub);
       }
-    } catch {
-      this.payload.logger.error(`Failed to authenticate`);
+    } catch (e) {
+      this.payload.logger.error(`Error in authenticate: ${e}`);
       this.fail();
     }
   }
@@ -189,13 +183,11 @@ export class ThirdwebStrategy extends Strategy {
     const jwt = ThirdwebStrategy.extractJWT(req, key);
 
     if (!jwt) {
-      this.payload.logger.error(`No JWT found`);
       return null;
     }
 
     const result = await this.verifyJWT(req, { jwt });
     if (!result?.sub) {
-      this.payload.logger.error(`No sub found`);
       return null;
     }
 
@@ -227,9 +219,7 @@ export class ThirdwebStrategy extends Strategy {
     const clientAuth = this.getServerClientAuth(isAdminPath);
 
     const result = await clientAuth.verifyJWT(params);
-
     if (!result.valid) {
-      this.payload.logger.error(`JWT is not valid: ${JSON.stringify(result)}`);
       return null;
     }
 

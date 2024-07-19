@@ -14,18 +14,17 @@ export interface Config {
     media: Media;
     users: User;
     redirects: Redirect;
-    mints: Mint;
-    'deploy-collection': DeployCollection;
     'rewards-program': RewardsProgram;
     referral: Referral;
     points: Points;
+    'deploy-collection': DeployCollection;
+    mints: Mint;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   globals: {
     settings: Settings;
     header: Header;
-    owlProtocol: OwlProtocol;
     core: Core;
   };
 }
@@ -70,8 +69,21 @@ export interface Category {
   slug?: string | null;
   title: string;
   shortTitle?: string | null;
-  deployedCollection?: (string | null) | DeployCollection;
   rewardProgram?: (string | null) | RewardsProgram;
+  deployedCollection?: (string | null) | DeployCollection;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rewards-program".
+ */
+export interface RewardsProgram {
+  id: string;
+  title: string;
+  details: {
+    pointsPerClaim: number;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -89,19 +101,6 @@ export interface DeployCollection {
   };
   settings: {
     maxMintPerUser: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "rewards-program".
- */
-export interface RewardsProgram {
-  id: string;
-  title: string;
-  details: {
-    pointsPerClaim: number;
   };
   updatedAt: string;
   createdAt: string;
@@ -166,11 +165,8 @@ export interface User {
   name?: string | null;
   roles?: ('admin' | 'user')[] | null;
   createdAt: string;
-  sub?: string | null;
   updatedAt: string;
-  address?: string | null;
-  referralCode?: string | null;
-  invitationReferralCode?: string | null;
+  sub?: string | null;
   email: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
@@ -343,25 +339,13 @@ export interface Redirect {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "mints".
- */
-export interface Mint {
-  id: string;
-  tokenId?: string | null;
-  claimable?: (string | null) | Item;
-  user?: (string | null) | User;
-  category?: (string | null) | Category;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "referral".
  */
 export interface Referral {
   id: string;
-  title?: string | null;
+  user?: (string | null) | User;
   referralCode?: string | null;
+  invitationReferralCode?: (string | null) | Referral;
   points?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -389,6 +373,18 @@ export interface Points {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mints".
+ */
+export interface Mint {
+  id: string;
+  claimable?: (string | null) | Item;
+  user?: (string | null) | User;
+  category?: (string | null) | Category;
   updatedAt: string;
   createdAt: string;
 }
@@ -479,24 +475,12 @@ export interface Header {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "owlProtocol".
- */
-export interface OwlProtocol {
-  id: string;
-  API: string;
-  xApiKey: string;
-  projectId: string;
-  chainId: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "core".
  */
 export interface Core {
   id: string;
   pointsPerReferral: number;
+  pointsPerReferralInvited: number;
   rewardsProgram?: (string | RewardsProgram)[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
