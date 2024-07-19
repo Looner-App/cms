@@ -64,7 +64,7 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
             },
           ],
           beforeChange: [
-            async ({ value, req }) => {
+            async ({ value, req, siblingData }) => {
               if (!value) {
                 // try {
                 //   /// before, find one item that has the same user
@@ -85,7 +85,7 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
                   user: req.user,
                   collection: `referral`,
                   data: {
-                    user: req.user,
+                    user: siblingData.id,
                     referralCode: value,
                   },
                 });
