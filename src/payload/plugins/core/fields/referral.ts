@@ -28,35 +28,36 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
         },
         hooks: {
           afterRead: [
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             async ({ value, req }) => {
               if (!value) {
-                try {
-                  /// before, find one item that has the same user
-                  const referral = await req.payload.find({
-                    collection: `referral`,
-                    where: {
-                      user: req.user,
-                    },
-                  });
+                // try {
+                // /// before, find one item that has the same user
+                // const referral = await req.payload.find({
+                //   collection: `referral`,
+                //   where: {
+                //     user: req.user,
+                //   },
+                // });
 
-                  const foundReferral = referral.docs?.[0]?.referralCode;
+                // const foundReferral = referral.docs?.[0]?.referralCode;
 
-                  if (foundReferral) {
-                    value = foundReferral;
-                  } else {
-                    value = crypto.randomUUID();
-                    await req.payload.create({
-                      user: req.user,
-                      collection: `referral`,
-                      data: {
-                        user: req.user,
-                        referralCode: value,
-                      },
-                    });
-                  }
-                } catch {
-                  req.payload.logger.info(`error generatin referral code`);
-                }
+                // if (foundReferral) {
+                //   value = foundReferral;
+                // } else {
+                value = crypto.randomUUID();
+                // await req.payload.create({
+                //       user: req.user,
+                //       collection: `referral`,
+                //       data: {
+                //         user: req.user,
+                //         referralCode: value,
+                //       },
+                //     });
+                //   }
+                // } catch {
+                //   req.payload.logger.info(`error generatin referral code`);
+                // }
               }
 
               return value;
@@ -65,33 +66,33 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
           beforeChange: [
             async ({ value, req }) => {
               if (!value) {
-                try {
-                  /// before, find one item that has the same user
-                  const referral = await req.payload.find({
-                    collection: `referral`,
-                    where: {
-                      user: req.user,
-                    },
-                  });
+                // try {
+                //   /// before, find one item that has the same user
+                //   const referral = await req.payload.find({
+                //     collection: `referral`,
+                //     where: {
+                //       user: req.user,
+                //     },
+                //   });
 
-                  const foundReferral = referral.docs?.[0]?.referralCode;
+                //   const foundReferral = referral.docs?.[0]?.referralCode;
 
-                  if (foundReferral) {
-                    value = foundReferral;
-                  } else {
-                    value = crypto.randomUUID();
-                    await req.payload.create({
-                      user: req.user,
-                      collection: `referral`,
-                      data: {
-                        user: req.user,
-                        referralCode: value,
-                      },
-                    });
-                  }
-                } catch {
-                  req.payload.logger.info(`error generatin referral code`);
-                }
+                //   if (foundReferral) {
+                //     value = foundReferral;
+                //   } else {
+                value = crypto.randomUUID();
+                await req.payload.create({
+                  user: req.user,
+                  collection: `referral`,
+                  data: {
+                    user: req.user,
+                    referralCode: value,
+                  },
+                });
+                //   }
+                // } catch {
+                //   req.payload.logger.info(`error generatin referral code`);
+                // }
               }
 
               return value;
