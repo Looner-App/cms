@@ -23,82 +23,70 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
       async ({ operation, req, args }) => {
         if (operation !== `read`) return args;
 
-        const user = args?.req?.user as unknown as User;
-        if (!user) return args;
-
-        /// check if user has a referral relationship
-        const referral = await req.payload.find({
-          collection: `referral`,
-          where: {
-            user: { equals: user.id },
-          },
-        });
-
-        /// if already have a referral relationship, return
-        if (referral.docs?.length) {
-          return args;
-        }
-
-        /// prepare user user
-        const userData: Partial<ReferralEntity> = {
-          user: user.id,
-          referralCode: crypto.randomUUID(),
-          invitationReferralCode: undefined,
-        };
-
-        /// get referral code from cookies and set for user referral
-        const cookieWithReferralFromInviter = new Cookies(req, null);
-        const invitationReferralCode = cookieWithReferralFromInviter.get(`referral`);
-
-        if (invitationReferralCode) {
-          const inviterReferralDoc = await req.payload.find({
-            collection: `referral`,
-            where: {
-              referralCode: { equals: invitationReferralCode },
-            },
-          });
-
-          const inviterReferral = inviterReferralDoc.docs[0];
-
-          if (inviterReferral) {
-            userData.invitationReferralCode = inviterReferral.id as string;
-          }
-        }
-
-        /// create referral data
-        const invitedReferralDoc = (await req.payload.create({
-          collection: `referral`,
-          data: userData,
-        })) as unknown as ReferralEntity;
-
         try {
           /// ========================================================================
           /// Initial Referral Data
           /// ========================================================================
-          const invitedUser = user;
 
-          /// check if user have referral relationship
-          // const invitedReferralDocs = await req.payload.find({
-          //   collection: `referral`,
-          //   where: {
-          //     user: { equals: invitedUser.id },
-          //   },
-          // });
+          const invitedUser = args?.req?.user as unknown as User;
+          if (!invitedUser) return args;
 
-          /// get invited referral doc
-          // const invitedReferralDoc = invitedReferralDocs.docs?.[0] as unknown as ReferralEntity;
+          /// get invited
+          const referral = await req.payload.find({
+            collection: `referral`,
+            where: {
+              user: { equals: invitedUser.id },
+            },
+          });
+
+          /// if already have a referral relationship, return
+          if (referral.docs?.length) {
+            return args;
+          }
+
+          /// prepare user user
+          const userReferralData: Partial<ReferralEntity> = {
+            user: invitedUser.id,
+            referralCode: crypto.randomUUID(),
+            points: 0,
+            invitationReferralCode: undefined,
+          };
+
+          /// get referral code from cookies and set for user referral
+          const cookies = new Cookies(req, null);
+          const inviterReferralCodeCookie = cookies.get(`referral`);
+
+          if (inviterReferralCodeCookie) {
+            const inviterReferralDocs = await req.payload.find({
+              collection: `referral`,
+              where: {
+                referralCode: { equals: inviterReferralCodeCookie },
+              },
+            });
+
+            const inviterReferralDoc = inviterReferralDocs.docs[0] as unknown as ReferralEntity;
+            if (inviterReferralDoc) {
+              userReferralData.invitationReferralCode = inviterReferralDoc.id;
+            }
+          }
+
+          /// create referral data
+          const invitedReferralDoc = (await req.payload.create({
+            collection: `referral`,
+            data: userReferralData,
+          })) as unknown as ReferralEntity;
 
           /// if empty just return result
           if (!invitedReferralDoc) return args;
 
-          /// get inviter referral code
+          /// get inviter referral
           const inviterReferralDoc =
             invitedReferralDoc.invitationReferralCode as unknown as ReferralEntity;
 
-          /// if theres no invitation, just return result
+          /// if no inviter user, theres no valid referral
           if (!inviterReferralDoc?.id) return args;
-
-          const inviterReferralDocwUser = inviterReferralDoc?.user as unknown as User;
+          const inviterReferralDocUser = inviterReferralDoc?.user as unknown as User;
+          if (!inviterReferralDocUser?.id) return args;
 
           /// ========================================================================
           /// Settings
@@ -152,6 +140,10 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
                 points: pointsPerReferralInvited,
               },
             });
+
+            req.payload.logger.info(
+              `Referral points added to user ${invitedUser.id} with ${pointsPerReferralInvited} points`,
+            );
           }
 
           /// ========================================================================
@@ -175,7 +167,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
                 and: [
                   {
                     user: {
-                      equals: inviterReferralDocwUser.id,
+                      equals: inviterReferralDocUser.id,
                     },
                   },
                   {
@@ -232,7 +224,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
                 data: {
                   referrals: [{ referral: invitedUser.id, rewardsPointsEarned: pointsPerReferral }],
                   rewardsPointsEarned: pointsPerReferral,
-                  user: inviterReferralDocwUser.id,
+                  user: inviterReferralDocUser.id,
                 },
               });
             }
@@ -245,7 +237,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
                   and: [
                     {
                       user: {
-                        equals: inviterReferralDocwUser.id,
+                        equals: inviterReferralDocUser.id,
                       },
                     },
                     {
@@ -257,10 +249,11 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
                 },
               });
 
+              /// theres only one point doc per rewards program
               const inviterPointsDoc = inviterPointsDocs.docs?.[0] as unknown as Points;
 
               /// check if points already exist
-              if (inviterPointsDocs) {
+              if (inviterPointsDoc) {
                 ///if exist, update each of them
                 /// prepare points and get old referrals
                 const rewardsPointsEarned = Number(inviterPointsDoc.rewardsPointsEarned);
@@ -304,7 +297,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
                       { referral: invitedUser.id, rewardsPointsEarned: pointsPerReferral },
                     ],
                     rewardsPointsEarned: pointsPerReferral,
-                    user: inviterReferralDocwUser.id,
+                    user: inviterReferralDocUser.id,
                     rewardsProgram: rewardsProgram.id,
                   },
                 });
@@ -313,7 +306,7 @@ export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
           }
 
           req.payload.logger.info(
-            `Referral points added to user ${inviterReferralDocwUser.id} with ${pointsPerReferral} points`,
+            `Referral points added to user ${inviterReferralDocUser.id} with ${pointsPerReferral} points`,
           );
 
           return args;
