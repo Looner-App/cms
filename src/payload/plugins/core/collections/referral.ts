@@ -33,6 +33,7 @@ export const referral = ({ collections }: Referral): Config['collections'] => {
         create: () => false,
         delete: () => false,
       },
+      hooks: {},
       fields: fields.referral({
         fields: [],
         context: ReferralContext.Referrals,

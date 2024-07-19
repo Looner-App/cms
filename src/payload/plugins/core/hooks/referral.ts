@@ -1,8 +1,13 @@
 import type { CollectionConfig } from 'payload/types';
 
-import { APIError } from 'payload/errors';
+import Cookies from 'cookies';
 
-import type { RewardsProgram, User } from '../../../payload-types';
+import type {
+  Points,
+  Referral as ReferralEntity,
+  RewardsProgram,
+  User,
+} from '../../../payload-types';
 
 import { type Settings, SettingsKeys } from '../types';
 
@@ -13,276 +18,303 @@ export type Referral = {
 export const referral = ({ hooks }: Referral): CollectionConfig['hooks'] => {
   return {
     ...hooks,
+    beforeOperation: [
+      ...(hooks?.beforeOperation || []),
+      async ({ operation, req, args }) => {
+        if (operation !== `read`) return args;
 
-    afterOperation: [
-      ...(hooks?.afterOperation || []),
-      async ({ operation, req, result }) => {
-        if (operation === `create`) {
-          try {
-            const {
-              id,
-              invitationReferralCode,
-              referralCode: invitedReferralCode,
-            } = result as unknown as User;
+        try {
+          /// ========================================================================
+          /// Initial Referral Data
+          /// ========================================================================
 
-            /// if theres no invitation, just return result
-            if (!invitationReferralCode) return result;
+          const invitedUser = args?.req?.user as unknown as User;
+          if (!invitedUser) return args;
 
-            /// find inviter
-            const inviter = await req.payload.find({
-              collection: `users`,
+          /// get invited
+          const referral = await req.payload.find({
+            collection: `referral`,
+            where: {
+              user: { equals: invitedUser.id },
+            },
+          });
+
+          /// if already have a referral relationship, return
+          if (referral.docs?.length) {
+            return args;
+          }
+
+          /// prepare user user
+          const userReferralData: Partial<ReferralEntity> = {
+            user: invitedUser.id,
+            referralCode: crypto.randomUUID(),
+            points: 0,
+            invitationReferralCode: undefined,
+          };
+
+          /// get referral code from cookies and set for user referral
+          const cookies = new Cookies(req, null);
+          const inviterReferralCodeCookie = cookies.get(`referral`);
+
+          if (inviterReferralCodeCookie) {
+            const inviterReferralDocs = await req.payload.find({
+              collection: `referral`,
               where: {
-                referralCode: { equals: invitationReferralCode },
+                referralCode: { equals: inviterReferralCodeCookie },
               },
             });
 
-            /// check if theres an inviter available, if not return result
-            if (!inviter.docs?.length) return result;
+            const inviterReferralDoc = inviterReferralDocs.docs[0] as unknown as ReferralEntity;
+            if (inviterReferralDoc) {
+              userReferralData.invitationReferralCode = inviterReferralDoc.id;
+            }
+          }
 
-            inviter.docs.forEach(async inviterUser => {
-              /// get inviter data
-              const { referralCode: inviterReferralCode, id: inviterUserId } = inviterUser;
+          /// create referral data
+          const invitedReferralDoc = (await req.payload.create({
+            collection: `referral`,
+            data: userReferralData,
+          })) as unknown as ReferralEntity;
 
-              /// check if user has a referral code, if not return
-              if (!inviterReferralCode) return;
+          /// if empty just return result
+          if (!invitedReferralDoc) return args;
 
-              /// get referral data of inviter
-              const inviterReferral = await req.payload.find({
-                collection: `referral`,
-                where: {
-                  referralCode: { equals: inviterReferralCode },
-                },
-              });
+          /// get inviter referral
+          const inviterReferralDoc =
+            invitedReferralDoc.invitationReferralCode as unknown as ReferralEntity;
 
-              /// check if inviter has a referral relationship
-              if (!inviterReferral.docs?.length) return;
+          /// if no inviter user, theres no valid referral
+          if (!inviterReferralDoc?.id) return args;
+          const inviterReferralDocUser = inviterReferralDoc?.user as unknown as User;
+          if (!inviterReferralDocUser?.id) return args;
 
-              /// get settings
-              const coreSettings = (await req.payload.findGlobal({
-                slug: `core`,
-              })) as Settings;
-              /// referral settings
-              const rewardsProgram: RewardsProgram[] = coreSettings[SettingsKeys.RewardsProgram];
-              const pointsPerReferral = Number(coreSettings[SettingsKeys.PointsPerReferral]);
-              const pointsPerReferralInvited = Number(
-                coreSettings[SettingsKeys.PointsPerReferralInvited],
-              );
+          /// ========================================================================
+          /// Settings
+          /// ========================================================================
+          const coreSettings = (await req.payload.findGlobal({
+            slug: `core`,
+          })) as Settings;
 
-              /// INVITED
-              /// get invited data
-              const invitedReferral = await req.payload.find({
-                collection: `referral`,
-                where: {
-                  referralCode: { equals: invitedReferralCode },
-                },
-              });
+          const rewardsProgram: RewardsProgram[] = coreSettings[SettingsKeys.RewardsProgram];
+          const pointsPerReferral = Number(coreSettings[SettingsKeys.PointsPerReferral]);
+          const pointsPerReferralInvited = Number(
+            coreSettings[SettingsKeys.PointsPerReferralInvited],
+          );
 
-              /// check if invited has a referral relationship
-              if (pointsPerReferralInvited > 0 && invitedReferral.docs.length > 0) {
-                invitedReferral.docs.forEach(async invitedReferralData => {
-                  /// check if theres a rewards program available
-                  if (rewardsProgram?.length) {
-                    rewardsProgram.forEach(async (rewardsProgram: RewardsProgram) => {
-                      /// create points for the invited referral for each rewards program
-                      await req.payload.create({
-                        collection: `points`,
-                        data: {
-                          referrals: [],
-                          rewardsPointsEarned: pointsPerReferralInvited,
-                          user: id,
-                          rewardsProgram: rewardsProgram.id,
-                        },
-                      });
-                    });
-                  } else {
-                    /// since its first user account, create points for it without rewards program
-                    await req.payload.create({
-                      collection: `points`,
-                      data: {
-                        referrals: [],
-                        rewardsPointsEarned: pointsPerReferralInvited,
-                        user: id,
-                      },
-                    });
-                  }
-
-                  /// update the invited referral points since referral is created in user creation
-                  await req.payload.update({
-                    collection: `referral`,
-                    id: invitedReferralData.id,
-                    data: {
-                      points: pointsPerReferralInvited,
-                    },
-                  });
-                });
-                req.payload.logger.info(
-                  `Referral points has been added for the invited ${id} with ${pointsPerReferralInvited} points`,
-                );
-              } else {
-                req.payload.logger.info(`Referral points has failed to add for the invited ${id}`);
-              }
-
-              /// INVITER
-              inviterReferral.docs.forEach(async inviterReferralData => {
-                /// update the inviter referral points
-                await req.payload.update({
-                  collection: `referral`,
-                  id: inviterReferralData.id,
+          /// ========================================================================
+          /// INVITED
+          /// ========================================================================
+          /// check if invited has a referral relationship
+          if (pointsPerReferralInvited > 0) {
+            /// check if theres a rewards program available
+            if (rewardsProgram?.length) {
+              rewardsProgram.forEach(async (rewardsProgram: RewardsProgram) => {
+                /// create points for the invited referral for each rewards program
+                await req.payload.create({
+                  collection: `points`,
                   data: {
-                    points: Number(inviterReferralData.points || 0) + pointsPerReferral,
+                    referrals: [],
+                    rewardsPointsEarned: pointsPerReferralInvited,
+                    user: invitedUser.id,
+                    rewardsProgram: rewardsProgram.id,
                   },
                 });
-
-                /// check if theres a rewards program available
-                if (!rewardsProgram?.length) {
-                  /// Todo: even if its created before, is necessary to check again?)
-                  const pointsUser = await req.payload.find({
-                    collection: `points`,
-                    where: {
-                      and: [
-                        {
-                          user: {
-                            equals: inviterUserId,
-                          },
-                        },
-                        {
-                          rewardsProgram: {
-                            exists: false,
-                          },
-                        },
-                      ],
-                    },
-                  });
-
-                  /// if already exist update
-                  if (pointsUser.docs?.length > 0) {
-                    pointsUser.docs.forEach(async (pointsUserData: any) => {
-                      /// prepare points and get old referrals
-                      const rewardsPointsEarned = Number(pointsUserData.rewardsPointsEarned);
-                      const newPoints = rewardsPointsEarned + pointsPerReferral;
-                      const referrals = pointsUserData.referrals || [];
-
-                      /// use already exist this referal, dont add again (skip duplicated referrations)
-                      if (referrals.some(referral => referral.referral.id === id)) return;
-
-                      /// update the points
-                      await req.payload.update({
-                        collection: `points`,
-                        id: pointsUserData.id,
-                        data: {
-                          rewardsPointsEarned: newPoints,
-                          referrals: [
-                            {
-                              referral: id,
-                              rewardsPointsEarned: pointsPerReferral,
-                            },
-                          ].concat(
-                            referrals.map(referralData => {
-                              return {
-                                referral: referralData.referral.id,
-                                rewardsPointsEarned: referralData.rewardsPointsEarned,
-                              };
-                            }),
-                          ),
-                        },
-                      });
-                    });
-                  } else {
-                    /// if points not exist yet, create one and attach the referral
-                    await req.payload.create({
-                      collection: `points`,
-                      data: {
-                        referrals: [{ referral: id, rewardsPointsEarned: pointsPerReferral }],
-                        rewardsPointsEarned: pointsPerReferral,
-                        user: inviterUserId,
-                      },
-                    });
-                  }
-
-                  return;
-                } else {
-                  rewardsProgram.forEach(async (rewardsProgram: RewardsProgram) => {
-                    /// get user points data
-                    const pointsUser = await req.payload.find({
-                      collection: `points`,
-                      where: {
-                        and: [
-                          {
-                            user: {
-                              equals: inviterUserId,
-                            },
-                          },
-                          {
-                            rewardsProgram: {
-                              equals: rewardsProgram.id,
-                            },
-                          },
-                        ],
-                      },
-                    });
-
-                    /// check if points already exist
-                    if (pointsUser.docs?.length > 0) {
-                      pointsUser.docs.forEach(async (pointsUserData: any) => {
-                        /// prepare points and get old referrals
-                        const rewardsPointsEarned = Number(pointsUserData.rewardsPointsEarned);
-                        const newPoints = rewardsPointsEarned + pointsPerReferral;
-                        const referrals = pointsUserData.referrals || [];
-
-                        /// use already exist this referal, dont add again
-                        if (referrals.some(referral => referral.referral.id === id)) return;
-
-                        /// update the points
-                        await req.payload.update({
-                          collection: `points`,
-                          id: pointsUserData.id,
-                          data: {
-                            rewardsPointsEarned: newPoints,
-                            referrals: [
-                              {
-                                referral: id,
-                                rewardsPointsEarned: pointsPerReferral,
-                              },
-                            ].concat(
-                              referrals.map(referralData => {
-                                return {
-                                  referral: referralData.referral.id,
-                                  rewardsPointsEarned: referralData.rewardsPointsEarned,
-                                };
-                              }),
-                            ),
-                          },
-                        });
-                      });
-                    } else {
-                      /// if not exist yet to this rewardsProgram, create one and attach the referral
-                      await req.payload.create({
-                        collection: `points`,
-                        data: {
-                          referrals: [{ referral: id, rewardsPointsEarned: pointsPerReferral }],
-                          rewardsPointsEarned: pointsPerReferral,
-                          user: inviterUserId,
-                        },
-                      });
-                    }
-                  });
-                }
               });
+            } else {
+              /// since its first user account, create points for it without rewards program
+              await req.payload.create({
+                collection: `points`,
+                data: {
+                  referrals: [],
+                  rewardsPointsEarned: pointsPerReferralInvited,
+                  user: invitedUser.id,
+                },
+              });
+            }
 
-              req.payload.logger.info(
-                `Referral points added to user ${inviterUserId} with ${pointsPerReferral} points`,
-              );
+            /// update the invited referral points since referral is created in user creation
+            await req.payload.update({
+              collection: `referral`,
+              id: invitedReferralDoc.id,
+              data: {
+                points: pointsPerReferralInvited,
+              },
             });
 
-            return result;
-          } catch (error) {
-            const msg = error instanceof Error ? error.message : error;
-            req.payload.logger.error(`Error setting referral: ${msg}`);
-            throw new APIError(msg, 400);
+            req.payload.logger.info(
+              `Referral points added to user ${invitedUser.id} with ${pointsPerReferralInvited} points`,
+            );
           }
-        }
 
-        return result;
+          /// ========================================================================
+          /// INVITER
+          /// ========================================================================
+
+          /// update the inviter referral points
+          await req.payload.update({
+            collection: `referral`,
+            id: inviterReferralDoc.id,
+            data: {
+              points: Number(inviterReferralDoc.points || 0) + pointsPerReferral,
+            },
+          });
+
+          /// check if theres a rewards program available
+          if (!rewardsProgram?.length) {
+            const inviterPointsDocs = await req.payload.find({
+              collection: `points`,
+              where: {
+                and: [
+                  {
+                    user: {
+                      equals: inviterReferralDocUser.id,
+                    },
+                  },
+                  {
+                    rewardsProgram: {
+                      exists: false,
+                    },
+                  },
+                ],
+              },
+            });
+
+            /// theres just one that is not assigned to a rewards program
+            const inviterPointsDoc = inviterPointsDocs.docs?.[0] as unknown as Points;
+
+            /// if already exist update
+            if (inviterPointsDoc) {
+              /// prepare points and get old referrals
+              const rewardsPointsEarned = Number(inviterPointsDoc.rewardsPointsEarned);
+              const newPoints = rewardsPointsEarned + pointsPerReferral;
+              const referrals = inviterPointsDoc.referrals || [];
+
+              /// use already exist this referal, dont add again (skip duplicated referrations)
+              if (
+                !referrals.some(
+                  referral => (referral.referral as ReferralEntity).id === invitedUser.id,
+                )
+              ) {
+                /// update the points
+                await req.payload.update({
+                  collection: `points`,
+                  id: inviterPointsDoc.id,
+                  data: {
+                    rewardsPointsEarned: newPoints,
+                    referrals: [
+                      {
+                        referral: invitedUser.id,
+                        rewardsPointsEarned: pointsPerReferral,
+                      },
+                    ].concat(
+                      referrals.map(referralData => {
+                        return {
+                          referral: (referralData.referral as ReferralEntity).id,
+                          rewardsPointsEarned: referralData.rewardsPointsEarned,
+                        };
+                      }),
+                    ),
+                  },
+                });
+              }
+            } else {
+              /// if points not exist yet, create one and attach the referral
+              await req.payload.create({
+                collection: `points`,
+                data: {
+                  referrals: [{ referral: invitedUser.id, rewardsPointsEarned: pointsPerReferral }],
+                  rewardsPointsEarned: pointsPerReferral,
+                  user: inviterReferralDocUser.id,
+                },
+              });
+            }
+          } else {
+            rewardsProgram.forEach(async (rewardsProgram: RewardsProgram) => {
+              /// get user points data
+              const inviterPointsDocs = await req.payload.find({
+                collection: `points`,
+                where: {
+                  and: [
+                    {
+                      user: {
+                        equals: inviterReferralDocUser.id,
+                      },
+                    },
+                    {
+                      rewardsProgram: {
+                        equals: rewardsProgram.id,
+                      },
+                    },
+                  ],
+                },
+              });
+
+              /// theres only one point doc per rewards program
+              const inviterPointsDoc = inviterPointsDocs.docs?.[0] as unknown as Points;
+
+              /// check if points already exist
+              if (inviterPointsDoc) {
+                ///if exist, update each of them
+                /// prepare points and get old referrals
+                const rewardsPointsEarned = Number(inviterPointsDoc.rewardsPointsEarned);
+                const newPoints = rewardsPointsEarned + pointsPerReferral;
+                const referrals = inviterPointsDoc.referrals || [];
+
+                /// use already exist this referal, dont add again
+                if (
+                  !referrals.some(
+                    referral => (referral.referral as ReferralEntity).id === invitedUser.id,
+                  )
+                ) {
+                  /// update the points
+                  await req.payload.update({
+                    collection: `points`,
+                    id: inviterPointsDoc.id,
+                    data: {
+                      rewardsPointsEarned: newPoints,
+                      referrals: [
+                        {
+                          referral: invitedUser.id,
+                          rewardsPointsEarned: pointsPerReferral,
+                        },
+                      ].concat(
+                        referrals.map(referralData => {
+                          return {
+                            referral: (referralData.referral as ReferralEntity).id,
+                            rewardsPointsEarned: referralData.rewardsPointsEarned,
+                          };
+                        }),
+                      ),
+                    },
+                  });
+                }
+              } else {
+                /// if not exist yet to this rewardsProgram, create one and attach the referral
+                await req.payload.create({
+                  collection: `points`,
+                  data: {
+                    referrals: [
+                      { referral: invitedUser.id, rewardsPointsEarned: pointsPerReferral },
+                    ],
+                    rewardsPointsEarned: pointsPerReferral,
+                    user: inviterReferralDocUser.id,
+                    rewardsProgram: rewardsProgram.id,
+                  },
+                });
+              }
+            });
+          }
+
+          req.payload.logger.info(
+            `Referral points added to user ${inviterReferralDocUser.id} with ${pointsPerReferral} points`,
+          );
+
+          return args;
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : error;
+          req.payload.logger.error(`Error setting referral: ${msg}`);
+          return args;
+        }
       },
     ],
   };
