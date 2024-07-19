@@ -30,28 +30,32 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
           afterRead: [
             async ({ value, req }) => {
               if (!value) {
-                /// before, find one item that has the same user
-                const referral = await req.payload.find({
-                  collection: `referral`,
-                  where: {
-                    user: req.user,
-                  },
-                });
-
-                const foundReferral = referral.docs?.[0]?.referralCode;
-
-                if (foundReferral) {
-                  value = referral.docs?.[0]?.referralCode;
-                } else {
-                  value = crypto.randomUUID();
-                  await req.payload.create({
-                    user: req.user,
+                try {
+                  /// before, find one item that has the same user
+                  const referral = await req.payload.find({
                     collection: `referral`,
-                    data: {
+                    where: {
                       user: req.user,
-                      referralCode: value,
                     },
                   });
+
+                  const foundReferral = referral.docs?.[0]?.referralCode;
+
+                  if (foundReferral) {
+                    value = foundReferral;
+                  } else {
+                    value = crypto.randomUUID();
+                    await req.payload.create({
+                      user: req.user,
+                      collection: `referral`,
+                      data: {
+                        user: req.user,
+                        referralCode: value,
+                      },
+                    });
+                  }
+                } catch {
+                  req.payload.logger.info(`error generatin referral code`);
                 }
               }
 
@@ -61,28 +65,32 @@ export const referral = ({ fields, context }: Referral): CollectionConfig['field
           beforeChange: [
             async ({ value, req }) => {
               if (!value) {
-                /// before, find one item that has the same user
-                const referral = await req.payload.find({
-                  collection: `referral`,
-                  where: {
-                    user: req.user,
-                  },
-                });
-
-                const foundReferral = referral.docs?.[0]?.referralCode;
-
-                if (foundReferral) {
-                  value = referral.docs?.[0]?.referralCode;
-                } else {
-                  value = crypto.randomUUID();
-                  await req.payload.create({
-                    user: req.user,
+                try {
+                  /// before, find one item that has the same user
+                  const referral = await req.payload.find({
                     collection: `referral`,
-                    data: {
+                    where: {
                       user: req.user,
-                      referralCode: value,
                     },
                   });
+
+                  const foundReferral = referral.docs?.[0]?.referralCode;
+
+                  if (foundReferral) {
+                    value = foundReferral;
+                  } else {
+                    value = crypto.randomUUID();
+                    await req.payload.create({
+                      user: req.user,
+                      collection: `referral`,
+                      data: {
+                        user: req.user,
+                        referralCode: value,
+                      },
+                    });
+                  }
+                } catch {
+                  req.payload.logger.info(`error generatin referral code`);
                 }
               }
 
