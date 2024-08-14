@@ -15,7 +15,8 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticDir: path.resolve(__dirname, `../../../../media`),
-    mimeTypes: [`image/*`, `application/pdf`, `video/*`, `application/x-mpegURL`],
+    /// allow .Gltf and .glb files
+    mimeTypes: [`image/*`, `video/*`, `application/*`, `model/*`],
 
     adminThumbnail: ({ doc }) => {
       const media = doc as unknown as MediaType;

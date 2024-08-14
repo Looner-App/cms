@@ -258,6 +258,11 @@ export const Items: CollectionConfig = {
       type: `upload`,
       relationTo: `media`,
     },
+    {
+      name: `marker_3d`,
+      type: `upload`,
+      relationTo: `media`,
+    },
     richTextSlate({
       name: `desc`,
       label: `Description`,

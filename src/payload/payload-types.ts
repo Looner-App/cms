@@ -47,6 +47,7 @@ export interface Item {
    */
   location: [number, number];
   image?: string | Media | null;
+  marker_3d?: string | Media | null;
   desc?: {
     slate?:
       | {
