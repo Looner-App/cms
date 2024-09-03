@@ -38,14 +38,14 @@ export class ThirdwebStrategy extends Strategy {
       secretKey: this.opts.secretKey,
     });
 
-    /// only ssr
+    /// only server side
     this._serverClientAuth = createClientAuth(
       this.serverClient,
       this.opts.domain,
       this.opts.privateKey,
     );
 
-    /// only csr
+    /// only client side
     this._serverClientAuthClient = createClientAuth(
       this.serverClient,
       this.opts.domainClient,

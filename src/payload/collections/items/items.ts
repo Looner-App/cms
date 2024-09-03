@@ -290,5 +290,14 @@ export const Items: CollectionConfig = {
         },
       },
     },
+    {
+      type: `checkbox`,
+      name: `isTargetAR`,
+      label: `Is Target AR`,
+      defaultValue: false,
+      admin: {
+        position: `sidebar`,
+      },
+    },
   ],
 };
