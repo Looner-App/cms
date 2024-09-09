@@ -2,7 +2,7 @@ import type { Config } from 'payload/config';
 
 import map from 'lodash/map';
 
-import { admins, adminsAndUser } from '../../../access';
+import { adminsAndUser } from '../../../access';
 import { fields } from '../fields';
 
 export type Pages = {
@@ -25,7 +25,7 @@ export const newsletterEmails = ({ collections }: Pages): Config['collections'] 
         group: `Newsletter`,
       },
       access: {
-        read: admins,
+        read: adminsAndUser,
         update: () => false,
         create: adminsAndUser,
         delete: () => false,
