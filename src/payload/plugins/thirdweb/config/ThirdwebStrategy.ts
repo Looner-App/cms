@@ -145,7 +145,7 @@ export class ThirdwebStrategy extends Strategy {
       });
     } catch (e) {
       /// bypass
-      console.log(e);
+      // console.log(e);
     }
 
     const updatedUser = await this.payload.update({
