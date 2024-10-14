@@ -1,13 +1,13 @@
 import type { Request } from 'express';
 import type { Payload } from 'payload';
 import type { User } from 'payload/auth';
-import type { VerifyJWTParams } from 'thirdweb/dist/types/auth/core/verify-jwt';
 import type { JWTPayload } from 'thirdweb/dist/types/utils/jwt/types';
 
 import Cookies from 'cookies';
 import crypto from 'crypto';
 import merge from 'lodash/merge';
 import { Strategy } from 'passport';
+// import { BASENAME_RESOLVER_ADDRESS, resolveL2Name } from 'thirdweb/extensions/ens';
 
 import type { ThirdwebUser } from '../types';
 import type { StrategyOptions } from '../types';
@@ -133,10 +133,16 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   private async mergeUser(user: User, thirdwebUser?: ThirdwebUser): Promise<User> {
+    // const name = await resolveL2Name({
+    //   client: this.serverClient,
+    //   address: user.sub!,
+    // });
+
     const updatedUser = await this.payload.update({
       collection: this.slug,
       id: user.id,
       data: merge(user, {
+        // name,
         createdAt: thirdwebUser?.createdAt || user.createdAt,
         email: thirdwebUser?.email || user.email,
       }),
@@ -214,7 +220,10 @@ export class ThirdwebStrategy extends Strategy {
     return path.includes(this.opts.domain);
   }
 
-  async verifyJWT(req: Request, params: VerifyJWTParams): Promise<JWTPayload> {
+  async verifyJWT(
+    req: Request,
+    params: Parameters<ServerClientAuth['verifyJWT']>['0'],
+  ): Promise<JWTPayload> {
     const isAdminPath = this.isAdminPath(req.headers.referer || ``);
     const clientAuth = this.getServerClientAuth(isAdminPath);
 
