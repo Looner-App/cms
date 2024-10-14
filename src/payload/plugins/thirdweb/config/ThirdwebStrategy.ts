@@ -7,13 +7,14 @@ import Cookies from 'cookies';
 import crypto from 'crypto';
 import merge from 'lodash/merge';
 import { Strategy } from 'passport';
-// import { BASENAME_RESOLVER_ADDRESS, resolveL2Name } from 'thirdweb/extensions/ens';
+import { resolveL2Name } from 'thirdweb/extensions/ens';
 
 import type { ThirdwebUser } from '../types';
 import type { StrategyOptions } from '../types';
 import type { ServerClient, ServerClientAuth } from './client';
 
 import { createClient, createClientAuth } from './client';
+import { wagmiChains } from './config';
 import { Role } from './roles';
 
 export class ThirdwebStrategy extends Strategy {
@@ -133,16 +134,25 @@ export class ThirdwebStrategy extends Strategy {
   }
 
   private async mergeUser(user: User, thirdwebUser?: ThirdwebUser): Promise<User> {
-    // const name = await resolveL2Name({
-    //   client: this.serverClient,
-    //   address: user.sub!,
-    // });
+    let name = `Looner`;
+
+    try {
+      name = await resolveL2Name({
+        client: this.serverClient,
+        address: user.sub as string,
+        resolverAddress: wagmiChains[0]?.resolverAddress,
+        resolverChain: wagmiChains[0],
+      });
+    } catch (e) {
+      /// bypass
+      console.log(e);
+    }
 
     const updatedUser = await this.payload.update({
       collection: this.slug,
       id: user.id,
       data: merge(user, {
-        // name,
+        name,
         createdAt: thirdwebUser?.createdAt || user.createdAt,
         email: thirdwebUser?.email || user.email,
       }),
