@@ -12,7 +12,7 @@ import { buildConfig } from 'payload/config';
 
 import { Categories, Items, Media, Pages, Users } from './collections';
 import { NoRobots } from './components/no-robots';
-import { claimItem, getItem, getSlugs } from './endpoints';
+import { claimItem, generateItem, getItem, getSlugs } from './endpoints';
 import { Header, Settings } from './globals';
 import { slugHandler } from './modules/slug-handler';
 import { core, thirdweb } from './plugins';
@@ -132,6 +132,11 @@ export default buildConfig({
       path: `/custom/claim/:barcode`,
       method: `patch`,
       handler: claimItem,
+    },
+    {
+      path: `/custom/generate-item`,
+      method: `post`,
+      handler: generateItem,
     },
   ],
   express: {
